@@ -12,6 +12,8 @@ from models.graphcnn import GraphCNN
 
 criterion = nn.CrossEntropyLoss()
 
+f = None
+
 def train(args, model, device, train_graphs, optimizer, epoch):
     model.train()
 
@@ -74,7 +76,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
     labels = torch.LongTensor([graph.label for graph in test_graphs]).to(device)
     correct = pred.eq(labels.view_as(pred)).sum().cpu().item()
     acc_test = correct / float(len(test_graphs))
-
+    f.write('%f,%f\n' % (acc_train, acc_test))
     print("accuracy train: %f test: %f" % (acc_train, acc_test))
 
     return acc_train, acc_test
@@ -119,6 +121,10 @@ def main():
                                         help='output file')
     args = parser.parse_args()
 
+    global f
+    f = open('performance.csv', 'w')
+    f.write('train_acc,test_acc\n')
+
     #set up seeds and gpu device
     torch.manual_seed(0)
     np.random.seed(0)    
@@ -150,6 +156,7 @@ def main():
         print("")
 
         print(model.eps)
+    f.close()
     
 
 if __name__ == '__main__':

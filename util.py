@@ -39,8 +39,11 @@ def load_data(dataset, degree_as_tag):
     with open('dataset/%s/%s.txt' % (dataset, dataset), 'r') as f:
         n_g = int(f.readline().strip())
         for i in range(n_g):
+            print('processing graph %d' % i)
             row = f.readline().strip().split()
+            print(row)
             n, l = [int(w) for w in row]
+            print('graph label: %d' % l)
             if not l in label_dict:
                 mapped = len(label_dict)
                 label_dict[l] = mapped
@@ -78,9 +81,9 @@ def load_data(dataset, degree_as_tag):
                 node_feature_flag = False
 
             assert len(g) == n
-
-            g_list.append(S2VGraph(g, l, node_tags))
-
+            if len(g.edges) > 0:
+                g_list.append(S2VGraph(g, l, node_tags))
+    counter = 0
     #add labels and edge_mat       
     for g in g_list:
         g.neighbors = [[] for i in range(len(g.g))]
@@ -99,6 +102,10 @@ def load_data(dataset, degree_as_tag):
         edges.extend([[i, j] for j, i in edges])
 
         deg_list = list(dict(g.g.degree(range(len(g.g)))).values())
+        print('--------------')
+        print('graph %d' % counter)
+        counter += 1
+        print(len(edges))
         g.edge_mat = torch.LongTensor(edges).transpose(0,1)
 
     if degree_as_tag:
