@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import networkx as nx
+from scipy.spatial import Delaunay
 import json
 
 '''
@@ -80,7 +81,7 @@ def euclidian_distance(x1, y1, x2, y2):
 def manhattan_distance(x1, y1, x2, y2):
 	return np.abs(x1 - x2) + np.abs(y1 - y2)
 
-def prepare_graphs(l, method='cutoff', measurement='average', distance=euclidian_distance, threshold=10, threshold2=30):
+def cutoff_graphs(l, method='cutoff', measurement='average', distance=euclidian_distance, threshold=10, threshold2=30):
 	res = []
 	if method == 'cutoff':
 		for i in l:
@@ -103,11 +104,38 @@ def prepare_graphs(l, method='cutoff', measurement='average', distance=euclidian
 			res.append(G)
 	return res
 
+def triangle_graph(l, measurement = 'average'):
+	res = []
+	for i in l:
+		csv = pd.read_csv(i).drop(columns=['Unnamed: 0']).values
+		if measurement == 'average':
+			x = np.mean(np.vstack((csv[:, 0], csv[:, 2])), axis=0)
+			y = np.mean(np.vstack((csv[:, 1], csv[:, 3])), axis=0)
+		elif measurement == 'cell':
+			x = csv[:, 0]
+			y = csv[:, 1]
+		elif measurement == 'nuc':
+			x = csv[:, 2]
+			y = csv[:, 3]
+		points = np.zeros((len(csv), 2))
+		points[:, 0] = x 
+		points[:, 1] = y
+		tri = Delaunay(points)
+		G = nx.Graph()
+		for triangle in tri.simplices:
+			G.add_edge(triangle[0], triangle[1])
+			G.add_edge(triangle[0], triangle[2])
+			G.add_edge(triangle[1], triangle[0])
+			G.add_edge(triangle[1], triangle[2])
+			G.add_edge(triangle[2], triangle[0])
+			G.add_edge(triangle[2], triangle[1])
+		res.append(G)
+	return res
 
 
 def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f):
 
-	graph = prepare_graphs([graph_fname], threshold=min_cutoff, threshold2=max_cutoff)[0]
+	graph = cutoff_graphs([graph_fname], threshold=min_cutoff, threshold2=max_cutoff)[0]
 	feature, y = prepare_features([feature_fname], patient_to_labels = patient_to_labels, label_method = 'labels')
 	graph_label = y[0]
 	node_labels = kmeans_model.predict(pca_model.transform(feature))
