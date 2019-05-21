@@ -14,7 +14,7 @@ import json
 Usage: 
 
 python cluster.py <directory to the train/test of any fold of the 5-fold dataset> 
-                  <percentage of data for subsampling in decimal> 
+                  <total number of images to subsample> 
                   <Min distance cutoff for graph construction>
                   <Max distance cutoff for graph construction>
                   <K of the K-means clustering algorithm>
@@ -30,12 +30,41 @@ def get_graphs(path):
 				gs.append(os.path.join(root, file))
 	return gs
 
-def subsample(samples, p=0.2):
-	return np.random.choice(samples, size=int(p * len(samples)))
-
 def get_features(gs):
 	return [x.replace('graph', 'feature') for x in gs]
 
+def subsample(samples, p=0.2):
+	return np.random.choice(samples, size=int(p * len(samples)))
+
+def subsample_even(samples, num_imgs, patient_to_labels):
+	tree = []
+
+	# magic number
+	for i in range(8):
+		tree.append(dict())
+	num_imgs_per_class = int(num_imgs / 8)
+	for i in samples:
+		patient = i.split('/')[-2]
+		class_id = patient_to_labels[i.split('/')[-2]]
+		if patient not in tree[class_id]:
+			tree[class_id][patient] = []
+		tree[class_id][patient].append(i)
+	res = []
+	for i in tree:
+		num_imgs_per_patient = int(num_imgs_per_class / len(i.keys()))
+		rest_imgs = num_imgs_per_class - int(num_imgs_per_patient * len(i.keys()))
+		tmp = []
+		for key in i:
+			l = i[key]
+			tmp += l
+			if len(l) >= num_imgs_per_patient:
+				res += list(np.random.choice(l, size=num_imgs_per_patient))
+			else:
+				for counter in range(int(num_imgs_per_patient / len(l))):
+					res += l
+				res += list(np.random.choice(l, size=int(num_imgs_per_patient % len(l))))
+		res += list(np.random.choice(tmp, size=rest_imgs))
+	return res
 
 def prepare_features(l, patient_to_labels = None, label_method='patient'):
 	res = []
@@ -135,7 +164,7 @@ def triangle_graph(l, measurement = 'average'):
 
 def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f):
 
-	graph = cutoff_graphs([graph_fname], threshold=min_cutoff, threshold2=max_cutoff)[0]
+	graph = triangle_graph([graph_fname])[0]
 	feature, y = prepare_features([feature_fname], patient_to_labels = patient_to_labels, label_method = 'labels')
 	graph_label = y[0]
 	node_labels = kmeans_model.predict(pca_model.transform(feature))
@@ -153,11 +182,6 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 
 
 def main(argv):
-	print('retriving images in {}'.format(argv[1]))
-	gs = get_graphs(argv[1])
-	print('retrived {} images'.format(len(gs)))
-	print('subsampling with p = {}'.format(argv[2]))
-	gss = subsample(gs, p=float(argv[2]))
 
 	# Parse other parameters
 	min_cutoff = float(argv[3])
@@ -165,6 +189,14 @@ def main(argv):
 	k_kmeans = int(argv[5])
 	path_json = argv[6]
 	path_output = argv[7]
+
+	patient_to_labels = json.load(open(path_json))
+
+	print('retriving images in {}'.format(argv[1]))
+	gs = get_graphs(argv[1])
+	print('retrived {} images'.format(len(gs)))
+	print('subsampling with total number of imgs = {}'.format(argv[2]))
+	gss = subsample_even(gs, int(argv[2]), patient_to_labels)
 	
 	fs = get_features(gs)
 	fss = get_features(gss)
@@ -180,8 +212,6 @@ def main(argv):
 	f = open(path_output, 'w')
 	f.write('%d\n' % len(fs))
 	ctr = 0
-
-	patient_to_labels = json.load(open(path_json))
 
 	for i in range(len(fs)):
 		write_graph(gs[i], fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, f)
