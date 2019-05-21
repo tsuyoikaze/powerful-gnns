@@ -120,10 +120,6 @@ def main():
                                         help='output file')
     args = parser.parse_args()
 
-    global f
-    f = open('performance.csv', 'w')
-    f.write('train_acc,test_acc\n')
-
     #set up seeds and gpu device
     torch.manual_seed(0)
     np.random.seed(0)    
@@ -150,7 +146,7 @@ def main():
 
         if not args.filename == "":
             with open(args.filename, 'w') as f:
-                f.write("%f %f %f" % (avg_loss, acc_train, acc_test))
+                f.write("%f,%f,%f" % (avg_loss, acc_train, acc_test))
                 f.write("\n")
         print("")
 
