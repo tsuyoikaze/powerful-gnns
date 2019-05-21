@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from scipy.spatial import Delaunay
 import json
-import StringIO
+import io # for python3
 
 '''
 Usage: 
@@ -212,7 +212,7 @@ def main(argv):
 		os.remove(path_output)
 	ctr = 0
 
-	graph_contents_stream = StringIO.StringIO()
+	graph_contents_stream = io.StringIO()
 
 	for i in range(len(fs)):
 		if pd.read_csv(gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
@@ -222,6 +222,7 @@ def main(argv):
 			print('processing %d / %d' % (ctr, len(fs)))
 	f = open(path_output, 'w')
 	f.write('%d\n' % len(ctr))
+	f.write('%s' % graph_contents_stream.getvalue())
 	f.close()
 
 if __name__ == '__main__':
