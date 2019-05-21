@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from scipy.spatial import Delaunay
 import json
+import StringIO
 
 '''
 Usage: 
@@ -209,15 +210,18 @@ def main(argv):
 
 	if os.path.isfile(path_output):
 		os.remove(path_output)
-	f = open(path_output, 'w')
-	f.write('%d\n' % len(fs))
 	ctr = 0
 
+	graph_contents_stream = StringIO.StringIO()
+
 	for i in range(len(fs)):
-		write_graph(gs[i], fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, f)
-		ctr += 1
+		if pd.read_csv(gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
+			write_graph(gs[i], fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream)
+			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(fs)))
+	f = open(path_output, 'w')
+	f.write('%d\n' % len(ctr))
 	f.close()
 
 if __name__ == '__main__':
