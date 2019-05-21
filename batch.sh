@@ -31,7 +31,7 @@ proj_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 python "$proj_dir/cluster.py" "$data_path" "$num_imgs" "$min_dist" "$max_dist" "$K" "$proj_dir/patient_to_labels.json" "$proj_dir/dataset/test/test.txt"
 
 # do the training
-python "$proj_dir/main.py" "--dataset test" "--batch_size $batch_size" "--epochs $num_epochs" "--lr $learning_rate" "--num_layers $num_layers" "--hidden_dim $num_hidden_units" "--filename results"
+python "$proj_dir/main.py --dataset test --batch_size $batch_size --epochs $num_epochs --lr $learning_rate --num_layers $num_layers --hidden_dim $num_hidden_units --filename results"
 
 # aftermath
 mv "performance.csv" "$num_imgs_$K_$batch_size_$num_epochs_$learning_rate_$num_layers_$num_hidden_units.csv"

@@ -156,7 +156,7 @@ def main():
         print("")
 
         print(model.eps)
-    f.close()
+    #f.close()
     
 
 if __name__ == '__main__':
