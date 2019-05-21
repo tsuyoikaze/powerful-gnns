@@ -1,0 +1,28 @@
+1. PCA number of components
+2. Silhouette coefficient for K-means
+3. Try out different graph constructions
+4. Remove 10-fold cross validation
+5. Split another validation (split by patient)
+6. Cross validation: choose 5 sets of optimal hyperparameters and output 5 testing loss as reporting values (start from 1 fold)
+7. Overleaf: add figure of PCA eigenvalues and K-means; visualization of K-means (isomap), can 
+
+-------
+
+1. Resampling images and patients for training set
+2. Sample # cells evenly for each type, patient
+3. Be able to run with batch of hyperparameters for NN
+4. Delaunay triangulation for graph (done)
+
+Isomap and PCA plots, shape and color based on clusters and labels
+
+Later
+1. Split separate validation set from training and be able to pass it in
+2. Balance # images and patient for validation
+
+Next step
+1. Tuning hyperparameters (K in K-means, # of PCA dimensions, # layers in networks and # nodes per layer, learning rate, # epochs)
+  a) Need to make sure batch_size * iter per epoch is around # training set
+  b) Try decreasing # parameters in NN
+  c) Try preprocessing, etc
+
+Final plot: we can have images of cells in the plot
