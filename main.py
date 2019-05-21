@@ -76,7 +76,6 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
     labels = torch.LongTensor([graph.label for graph in test_graphs]).to(device)
     correct = pred.eq(labels.view_as(pred)).sum().cpu().item()
     acc_test = correct / float(len(test_graphs))
-    f.write('%f,%f\n' % (acc_train, acc_test))
     print("accuracy train: %f test: %f" % (acc_train, acc_test))
 
     return acc_train, acc_test
