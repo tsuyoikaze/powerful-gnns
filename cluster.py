@@ -221,7 +221,7 @@ def main(argv):
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(fs)))
 	f = open(path_output, 'w')
-	f.write('%d\n' % len(ctr))
+	f.write('%d\n' % ctr)
 	f.write('%s' % graph_contents_stream.getvalue())
 	f.close()
 
