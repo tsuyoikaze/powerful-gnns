@@ -17,6 +17,8 @@ import io # for python3
 Usage: 
 
 python cluster.py <directory to the training set of any fold of the 5-fold dataset> 
+                  <directory to the validation set of any fold of the 5-fold dataset> 
+                  <directory to the testing set of any fold of the 5-fold dataset> 
                   <total number of images to subsample> 
                   <Min distance cutoff for graph construction>
                   <Max distance cutoff for graph construction>
@@ -223,18 +225,27 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 def main(argv):
 
 	# Parse other parameters
-	min_cutoff = float(argv[3])
-	max_cutoff = float(argv[4])
-	k_kmeans = int(argv[5])
-	path_json = argv[6]
-	path_output = argv[7]
+	min_cutoff = float(argv[5])
+	max_cutoff = float(argv[6])
+	k_kmeans = int(argv[7])
+	path_json = argv[8]
+	path_output = argv[9]
+	valid_path_output = argv[10]
+	test_path_output = argv[11]
 
 	patient_to_labels = json.load(open(path_json))
 
-	print('retriving images in {}'.format(argv[1]))
+	print('retriving images in training set {}'.format(argv[1]))
 	gs = get_graphs(argv[1])
+	print('retriving images in validation set {}'.format(argv[2]))
+	valid_gs = get_graphs(argv[2])
+	valid_fs = get_features(valid_gs)
+	print('retriving images in testing set {}'.format(argv[3]))
+	test_gs = get_graphs(argv[3])
+	test_fs = get_features(test_gs)
+
 	print('retrived {} images'.format(len(gs)))
-	print('subsampling with total number of imgs = {}'.format(argv[2]))
+	print('subsampling with total number of imgs = {}'.format(argv[4]))
 	gss = subsample_even(gs, int(argv[2]), patient_to_labels)
 	
 	fs = get_features(gs)
@@ -263,6 +274,42 @@ def main(argv):
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(fs)))
 	f = open(path_output, 'w')
+	f.write('%d\n' % ctr)
+	f.write('%s' % graph_contents_stream.getvalue())
+	f.close()
+
+	'''
+	validation
+	'''
+	ctr = 0
+
+	graph_contents_stream = io.StringIO()
+
+	for i in range(len(valid_fs)):
+		if pd.read_csv(valid_gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
+			write_graph(valid_gs[i], valid_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream)
+			ctr += 1
+		if ctr % 100 == 0:
+			print('processing %d / %d' % (ctr, len(valid_fs)))
+	f = open(valid_path_output, 'w')
+	f.write('%d\n' % ctr)
+	f.write('%s' % graph_contents_stream.getvalue())
+	f.close()
+
+	'''
+	testing
+	'''
+	ctr = 0
+
+	graph_contents_stream = io.StringIO()
+
+	for i in range(len(test_fs)):
+		if pd.read_csv(test_gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
+			write_graph(test_gs[i], test_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream)
+			ctr += 1
+		if ctr % 100 == 0:
+			print('processing %d / %d' % (ctr, len(test_fs)))
+	f = open(test_path_output, 'w')
 	f.write('%d\n' % ctr)
 	f.write('%s' % graph_contents_stream.getvalue())
 	f.close()
