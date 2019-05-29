@@ -18,7 +18,7 @@ for i in l:
 res = []
 
 for i in d:
-	num = int(len(d[i]) * float(sys.argv[3]))
+	num = min(1, int(len(d[i]) * float(sys.argv[3])))
 	if num < 1:
 		print('In class %d, epected number of patient in validation is %f' % (i, len(d[i]) * float(sys.argv[3])))
 	idx = np.random.choice(int(len(d[i])), size=num)
