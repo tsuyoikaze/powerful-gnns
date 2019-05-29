@@ -246,7 +246,7 @@ def main(argv):
 
 	print('retrived {} images'.format(len(gs)))
 	print('subsampling with total number of imgs = {}'.format(argv[4]))
-	gss = subsample_even(gs, int(argv[2]), patient_to_labels)
+	gss = subsample_even(gs, int(argv[4]), patient_to_labels)
 	
 	fs = get_features(gs)
 	fss = get_features(gss)
