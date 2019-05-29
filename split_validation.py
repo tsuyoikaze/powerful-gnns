@@ -10,6 +10,7 @@ l = os.listdir(sys.argv[1])
 os.mkdir(sys.argv[2])
 d = dict()
 patient_to_labels = json.load(open(sys.argv[4]))
+print(l)
 for i in l:
 	if patient_to_labels[i] not in d:
 		d[patient_to_labels[i]] = []
