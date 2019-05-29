@@ -4,7 +4,9 @@ import pandas as pd
 import re
 import os
 from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
+from sklearn.decomposition import LatentDirichletAllocation as LDA
 import matplotlib.pyplot as plt
 import networkx as nx
 from scipy.spatial import Delaunay
@@ -14,7 +16,7 @@ import io # for python3
 '''
 Usage: 
 
-python cluster.py <directory to the train/test of any fold of the 5-fold dataset> 
+python cluster.py <directory to the training set of any fold of the 5-fold dataset> 
                   <total number of images to subsample> 
                   <Min distance cutoff for graph construction>
                   <Max distance cutoff for graph construction>
@@ -36,6 +38,17 @@ def get_features(gs):
 
 def subsample(samples, p=0.2):
 	return np.random.choice(samples, size=int(p * len(samples)))
+
+def num_cells(fname):
+	return pd.read_csv(gs[i]).drop(columns=['Unnamed: 0']).values.shape[0]
+
+def sample_cells(fname, num):
+	res = []
+	mat = pd.read_csv(gs[i]).drop(columns=['Unnamed: 0']).values
+	rand = np.random.choice(num)
+	for i in rand:
+		res.append(mat[i])
+	return np.array(res)
 
 def subsample_even(samples, num_imgs, patient_to_labels):
 	tree = []
@@ -87,16 +100,29 @@ def pca(X, n_components = 4):
 	return p.fit_transform(X), p
 
 def lda(X, n_components = 4):
-	raise NotImplementedError
+	p = LDA(n_components = n_components)
+	return p.fit_transform(X), p
 
-def plot_pca(X, y):
+def plot_projected(X, y, model):
+	trans = model.fit_transform(X)
 	plt.clf()
-	plt.scatter(X[:, 0].T, X[:, 1].T, c=y)
+	plt.scatter(trans[:, 0].T, trans[:, 1].T, c=y)
 	plt.show()
-	plt.scatter(X[:, 0].T, X[:, 2].T, c=y)
+	plt.scatter(trans[:, 0].T, trans[:, 2].T, c=y)
 	plt.show()
-	plt.scatter(X[:, 1].T, X[:, 2].T, c=y)
+	plt.scatter(trans[:, 1].T, trans[:, 2].T, c=y)
 	plt.show()
+
+def plot_pca_elbow_plot(X, n_min, n_max, title, fname):
+	x, y = [], []
+	for i in range(n_min, n_max):
+		p = pca(X, n_components = i)
+		x.append(i)
+		y.append(p._explained_variance_)
+	plt.clf()
+	plt.title(title)
+	plt.plot(x, y)
+	plt.savefig(fname, dpi=300)
 
 def k_means(X, n_clusters = 8):
 	clu = KMeans(n_clusters=n_clusters)
@@ -104,6 +130,18 @@ def k_means(X, n_clusters = 8):
 	res = clu.labels_
 	cen = clu.cluster_centers_
 	return res, cen, clu
+
+def sihouette_coef(X, n_min, n_max, title, fname):
+	x, y = [], []
+	for i in range(n_min, n_max):
+		p = KMeans(n_clusters = i)
+		lbl = p.fit_transform(X)
+		x.append(i)
+		y.append(silhouette_score(X, lbl))
+	plt.clf()
+	plt.title(title)
+	plt.plot(x, y)
+	plt.savefig(fname, dpi=300)
 
 def euclidian_distance(x1, y1, x2, y2):
 	return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
@@ -203,8 +241,12 @@ def main(argv):
 	fss = get_features(gss)
 	print('reading feature files...')
 	Xs, ys = prepare_features(fss)
+	print('getting elbow plot of PCA/LDA...')
+	plot_pca_elbow_plot(Xs, 1, 20, 'Elbow plot of PCA from 1 to 20 components', 'pca_elbow.png')
 	print('dimensional reducing via PCA')
 	Xs_reduced, pca_obj = pca(Xs)
+	print('getting sihouette coefficient for K-means...')
+	sihouette_coef(Xs, 1, 20, 'Elbow plot of silhouette coefficient from 1 to 20 components', 'kmeans_elbow.png')
 	print('clustering via K-means')
 	labels, centeroids, kmeans_obj = k_means(Xs_reduced, n_clusters=k_kmeans)
 
