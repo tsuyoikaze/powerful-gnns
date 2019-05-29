@@ -27,4 +27,4 @@ for i in d:
 		res.append(d[i][patient])
 
 for i in res:
-	call('cp -r %s %s' % (os.path.join(sys.argv[1], str(i)), os.path.join(sys.argv[2], str(i))), shell=True)
+	call('mv -r %s %s' % (os.path.join(sys.argv[1], str(i)), os.path.join(sys.argv[2], str(i))), shell=True)
