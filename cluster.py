@@ -118,7 +118,7 @@ def plot_projected(X, y, model):
 def plot_pca_elbow_plot(X, n_min, n_max, title, fname):
 	x, y = [], []
 	for i in range(n_min, n_max):
-		p = pca(X, n_components = i)
+		_, p = pca(X, n_components = i)
 		x.append(i)
 		y.append(p._explained_variance_)
 	plt.clf()
