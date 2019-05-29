@@ -123,6 +123,8 @@ def plot_pca_elbow_plot(X, n_min, n_max, title, fname):
 		y.append(p.explained_variance_)
 	plt.clf()
 	plt.title(title)
+	print(x)
+	print(y)
 	plt.plot(x, y)
 	plt.savefig(fname, dpi=300)
 
