@@ -137,7 +137,7 @@ def sihouette_coef(X, n_min, n_max, title, fname):
 	x, y = [], []
 	for i in range(n_min, n_max):
 		p = KMeans(n_clusters = i)
-		lbl = p.fit_transform(X)
+		lbl = p.fit_predict(X)
 		x.append(i)
 		y.append(silhouette_score(X, lbl))
 	plt.clf()
@@ -257,7 +257,7 @@ def main(argv):
 	print('dimensional reducing via PCA')
 	Xs_reduced, pca_obj = pca(Xs)
 	print('getting sihouette coefficient for K-means...')
-#	sihouette_coef(Xs, 5, 20, 'Elbow plot of silhouette coefficient from 1 to 20 components', 'kmeans_elbow.png')
+		sihouette_coef(Xs, 5, 20, 'Elbow plot of silhouette coefficient from 1 to 20 components', 'kmeans_elbow.png')
 	print('clustering via K-means')
 	labels, centeroids, kmeans_obj = k_means(Xs_reduced, n_clusters=k_kmeans)
 
