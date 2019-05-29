@@ -23,7 +23,8 @@ for i in d:
 		print('In class %d, epected number of patient in validation is %f' % (i, len(d[i]) * float(sys.argv[3])))
 	idx = np.random.choice(int(len(d[i])), size=num)
 	for patient in idx:
+		print(patient)
 		res.append(patient)
 
 for i in res:
-	call('cp -r %s %s' % (os.path.join(sys.argv[1], i), os.path.join(sys.argv[2], i)))
+	call('cp -r %s %s' % (os.path.join(sys.argv[1], str(i)), os.path.join(sys.argv[2], str(i))))
