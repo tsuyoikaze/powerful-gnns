@@ -120,7 +120,7 @@ def plot_pca_elbow_plot(X, n_min, n_max, title, fname):
 	for i in range(n_min, n_max):
 		_, p = pca(X, n_components = i)
 		x.append(i)
-		y.append(p._explained_variance_)
+		y.append(p.explained_variance_)
 	plt.clf()
 	plt.title(title)
 	plt.plot(x, y)
