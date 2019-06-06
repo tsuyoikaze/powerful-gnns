@@ -140,11 +140,10 @@ def sihouette_coef(X, n_min, n_max, title, fname):
 		lbl = p.fit_predict(X)
 		x.append(i)
 		y.append(silhouette_score(X, lbl))
-                print(y)
+		print(y)
 	plt.clf()
 	plt.title(title)
 	plt.plot(x, y)
-        plt.show()
 	plt.savefig(fname, dpi=300)
 
 def euclidian_distance(x1, y1, x2, y2):
