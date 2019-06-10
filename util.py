@@ -81,7 +81,7 @@ def load_data(dataset, degree_as_tag):
                 node_features = None
                 node_feature_flag = False
 
-            assert len(g) == n
+            #assert len(g) == n
             if len(g.edges) > 0:
                 g_list.append(S2VGraph(g, l, node_tags))
     counter = 0
