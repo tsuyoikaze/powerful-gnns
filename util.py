@@ -36,7 +36,8 @@ def load_data(dataset, degree_as_tag):
     label_dict = {}
     feat_dict = {}
 
-    with open('dataset/%s/%s.txt' % (dataset, dataset), 'r') as f:
+    #loading dataset
+    with open(dataset, 'r') as f:
         n_g = int(f.readline().strip())
         for i in range(n_g):
             print('processing graph %d' % i)
