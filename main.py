@@ -130,6 +130,7 @@ def main():
     #loading data from data directory according to passing args
     data_dir = 'dataset/%s/%s' % (args.dataset, args.dataset)
     graphs, num_classes = load_data(data_dir + '.txt', args.degree_as_tag)
+    train_graphs = graphs
     test_graphs, _ = load_data(data_dir + '_test.txt', args.degree_as_tag)
     valid_graphs, _ = load_data(data_dir + '_valid.txt', args.degree_as_tag)
 
