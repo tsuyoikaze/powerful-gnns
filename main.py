@@ -130,13 +130,13 @@ def main():
     #loading data from data directory according to passing args
     data_dir = 'dataset/%s/%s' % (args.dataset, args.dataset)
     graphs, num_classes = load_data(data_dir + '.txt', args.degree_as_tag)
-    train_graphs = graphs
+    #train_graphs = graphs
     test_graphs, _ = load_data(data_dir + '_test.txt', args.degree_as_tag)
     valid_graphs, _ = load_data(data_dir + '_valid.txt', args.degree_as_tag)
 
     #10-fold cross validation removed due to different file processing method
     ##10-fold cross validation. Conduct an experiment on the fold specified by args.fold_idx.
-    #train_graphs, test_graphs = separate_data(graphs, args.seed, args.fold_idx)
+    train_graphs, test_graphs = separate_data(graphs, args.seed, args.fold_idx)
 
     model = GraphCNN(args.num_layers, args.num_mlp_layers, train_graphs[0].node_features.shape[1], args.hidden_dim, num_classes, args.final_dropout, args.learn_eps, args.graph_pooling_type, args.neighbor_pooling_type, device).to(device)
 
