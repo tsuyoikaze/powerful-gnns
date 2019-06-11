@@ -27,6 +27,8 @@ python cluster.py <directory to the training set of any fold of the 5-fold datas
                   <path to the output file>
 '''
 
+BINARY = True
+
 def get_graphs(path):
 	gs = []
 	for root, dirs, files in os.walk(path, topdown=False):
@@ -56,9 +58,13 @@ def subsample_even(samples, num_imgs, patient_to_labels):
 	tree = []
 
 	# magic number
-	for i in range(8):
+	num_classes = 8
+	if BINARY:
+		num_classes = 2
+
+	for i in range(num_classes):
 		tree.append(dict())
-	num_imgs_per_class = int(num_imgs / 8)
+	num_imgs_per_class = int(num_imgs / num_classes)
 	for i in samples:
 		patient = i.split('/')[-2]
 		class_id = patient_to_labels[i.split('/')[-2]]
