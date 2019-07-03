@@ -130,36 +130,38 @@ def main():
     #loading data from data directory according to passing args
     data_dir = 'dataset/%s/%s' % (args.dataset, args.dataset)
     graphs, num_classes = load_data(data_dir + '.txt', args.degree_as_tag)
-    #train_graphs = graphs
+    train_graphs = graphs
     test_graphs, _ = load_data(data_dir + '_test.txt', args.degree_as_tag)
     valid_graphs, _ = load_data(data_dir + '_valid.txt', args.degree_as_tag)
 
     #10-fold cross validation removed due to different file processing method
     ##10-fold cross validation. Conduct an experiment on the fold specified by args.fold_idx.
-    train_graphs, test_graphs = separate_data(graphs, args.seed, args.fold_idx)
+    #train_graphs, test_graphs = separate_data(graphs, args.seed, args.fold_idx)
 
     model = GraphCNN(args.num_layers, args.num_mlp_layers, train_graphs[0].node_features.shape[1], args.hidden_dim, num_classes, args.final_dropout, args.learn_eps, args.graph_pooling_type, args.neighbor_pooling_type, device).to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.5)
 
-
+    if not args.filename == '':
+        f = open(args.filename, 'w')
+        f.write('loss, train_acc, valid_acc\n')
     #compute loss and accuracies of train, test, and validation for each epoch
     for epoch in range(1, args.epochs + 1):
         scheduler.step()
 
         avg_loss = train(args, model, device, train_graphs, optimizer, epoch)
-        acc_train, acc_test = test(args, model, device, train_graphs, test_graphs, epoch)
+        acc_train, acc_test = test(args, model, device, train_graphs, valid_graphs, epoch)
         #acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch)
 
         if not args.filename == "":
-            with open(args.filename, 'w') as f:
-                f.write("%f,%f,%f,%f" % (avg_loss, acc_train, acc_test, acc_valid))
-                f.write("\n")
+            f.write("%f,%f,%f" % (avg_loss, acc_train, acc_test))
+            f.write("\n")
+            f.flush()
         print("")
-
         print(model.eps)
-    #f.close()
+    if not args.filename == '':
+        f.close()
     
 
 if __name__ == '__main__':
