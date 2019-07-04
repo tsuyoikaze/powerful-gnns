@@ -16,6 +16,7 @@ for root, dirs, files in os.walk(sys.argv[1]):
 
 for root, file in dir_list:
     csv = pd.read_csv(os.path.join(root, file))
-    offset = (float(sys.argv[2]), float(sys.argv[3]))
-    csv = augment(csv, offset)
+    if 'graph' in file:
+        offset = (float(sys.argv[2]), float(sys.argv[3]))
+        csv = augment(csv, offset)
     csv.to_csv(os.path.join(root, 'augmented_' + file))
