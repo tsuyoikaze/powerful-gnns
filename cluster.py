@@ -218,7 +218,6 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 	node_labels = kmeans_model.predict(pca_model.transform(feature))
 
 	# print number of nodes and graph label
-	print(graph_label)
 	f.write('%d %d\n' % (len(graph), graph_label))
 
 	# print the graph
