@@ -158,27 +158,26 @@ def euclidian_distance(x1, y1, x2, y2):
 def manhattan_distance(x1, y1, x2, y2):
 	return np.abs(x1 - x2) + np.abs(y1 - y2)
 
-def cutoff_graphs(l, method='cutoff', measurement='average', distance=euclidian_distance, threshold=10, threshold2=30):
+def cutoff_graphs(l, measurement='average', distance=euclidian_distance, threshold=10, threshold2=30):
 	res = []
-	if method == 'cutoff':
-		for i in l:
-			csv = pd.read_csv(i).drop(columns=['Unnamed: 0']).values
-			if measurement == 'average':
-				x = np.mean(np.vstack((csv[:, 0], csv[:, 2])), axis=0)
-				y = np.mean(np.vstack((csv[:, 1], csv[:, 3])), axis=0)
-			elif measurement == 'cell':
-				x = csv[:, 0]
-				y = csv[:, 1]
-			elif measurement == 'nuc':
-				x = csv[:, 2]
-				y = csv[:, 3]
-			G = nx.Graph()
-			G.add_nodes_from(range(len(x)))
-			for source in range(len(x)):
-				for target in range(len(x)):
-					if distance(x[source], y[source], x[target], y[target]) > threshold and distance(x[source], y[source], x[target], y[target]) < threshold2 :
-						G.add_edge(source, target)
-			res.append(G)
+	for i in l:
+		csv = pd.read_csv(i).drop(columns=['Unnamed: 0']).values
+		if measurement == 'average':
+			x = np.mean(np.vstack((csv[:, 0], csv[:, 2])), axis=0)
+			y = np.mean(np.vstack((csv[:, 1], csv[:, 3])), axis=0)
+		elif measurement == 'cell':
+			x = csv[:, 0]
+			y = csv[:, 1]
+		elif measurement == 'nuc':
+			x = csv[:, 2]
+			y = csv[:, 3]
+		G = nx.Graph()
+		G.add_nodes_from(range(len(x)))
+		for source in range(len(x)):
+			for target in range(len(x)):
+				if distance(x[source], y[source], x[target], y[target]) > threshold and distance(x[source], y[source], x[target], y[target]) < threshold2 :
+					G.add_edge(source, target)
+		res.append(G)
 	return res
 
 def triangle_graph(l, measurement = 'average'):
@@ -210,9 +209,12 @@ def triangle_graph(l, measurement = 'average'):
 	return res
 
 
-def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f):
+def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'cutoff'):
 
-	graph = triangle_graph([graph_fname])[0]
+	if graph_type == 'cutoff':
+		graph = cutoff_graphs([graph_fname], threshold = min_cutoff, threshold2 = max_cutoff)[0]
+	elif graph_type == 'triangle':
+		graph = triangle_graph([graph_fname])[0]
 	feature, y = prepare_features([feature_fname], patient_to_labels = patient_to_labels, label_method = 'labels')
 	graph_label = y[0]
 	node_labels = kmeans_model.predict(pca_model.transform(feature))
@@ -294,7 +296,7 @@ def main(argv):
 
 	for i in range(len(valid_fs)):
 		if pd.read_csv(valid_gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
-			write_graph(valid_gs[i], valid_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream)
+			write_graph(valid_gs[i], valid_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, graph_type = 'cutoff')
 			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(valid_fs)))
