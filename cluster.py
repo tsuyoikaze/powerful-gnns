@@ -236,7 +236,7 @@ def triangle_graph(l, measurement = 'average'):
 	return res
 
 
-def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'cutoff'):
+def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'triangle'):
 
 	if graph_type == 'cutoff':
 		graph = cutoff_graphs([graph_fname], threshold = min_cutoff, threshold2 = max_cutoff)[0]
