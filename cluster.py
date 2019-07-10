@@ -16,7 +16,7 @@ import io # for python3
 '''
 Usage: 
 
-python cluster.py <directory to the training set of any fold of the 5-fold dataset> 
+python3 cluster.py <directory to the training set of any fold of the 5-fold dataset> 
                   <directory to the validation set of any fold of the 5-fold dataset> 
                   <directory to the testing set of any fold of the 5-fold dataset> 
                   <total number of images to subsample> 
@@ -27,9 +27,13 @@ python cluster.py <directory to the training set of any fold of the 5-fold datas
                   <path to the output file>
 '''
 
+# binary or multi-class
 BINARY = True
 
 def get_graphs(path):
+	'''
+	Get all graph files as list of paths in a path
+	'''
 	gs = []
 	for root, dirs, files in os.walk(path, topdown=False):
 		for file in files:
@@ -39,9 +43,6 @@ def get_graphs(path):
 
 def get_features(gs):
 	return [x.replace('graph', 'feature') for x in gs]
-
-def subsample(samples, p=0.2):
-	return np.random.choice(samples, size=int(p * len(samples)))
 
 def num_cells(fname):
 	return pd.read_csv(gs[i]).drop(columns=['Unnamed: 0']).values.shape[0]
@@ -88,7 +89,33 @@ def subsample_even(samples, num_imgs, patient_to_labels):
 		res += list(np.random.choice(tmp, size=rest_imgs))
 	return res
 
+def generate_even(l, patient_to_labels):
+	res = dict()
+	count = dict()
+	for i in l:
+		label = patient_to_labels[i.split('/')[-2]]
+		if label not in res:
+			res[label] = []
+			count[label] = 0
+		res[label].append(i)
+		count[label] += 1
+	m = max(count.values())
+	r = []
+	for i in res:
+		magnification = int(m / float(count[i]))
+		res[i] = res[i] * magnification
+		count[i] = count[i] * magnification
+		if count[i] < m:
+			samples = np.random.choice(res[i], size=m - count[i], replace=False)
+			res[i] = res[i] + samples.tolist() 
+			count[i] = m 
+		r += res[i]
+	return r
+
 def prepare_features(l, patient_to_labels = None, label_method='patient'):
+	'''
+	Get features prepared and labels outlined
+	'''
 	res = []
 	y = []
 	for idx, i in enumerate(l):
@@ -246,6 +273,9 @@ def main(argv):
 
 	print('retriving images in training set {}'.format(argv[1]))
 	gs = get_graphs(argv[1])
+	gs = generate_even(gs, patient_to_labels)
+	print('balancing training set - new number of images = {}'.format(len(gs)))
+	fs = get_features(gs)
 	print('retriving images in validation set {}'.format(argv[2]))
 	valid_gs = get_graphs(argv[2])
 	valid_fs = get_features(valid_gs)
@@ -257,7 +287,7 @@ def main(argv):
 	print('subsampling with total number of imgs = {}'.format(argv[4]))
 	gss = subsample_even(gs, int(argv[4]), patient_to_labels)
 	
-	fs = get_features(gs)
+	
 	fss = get_features(gss)
 	print('reading feature files...')
 	Xs, ys = prepare_features(fss)
