@@ -59,13 +59,12 @@ def load_data(dataset, degree_as_tag):
                     attr = None
                 else:
                     row, attr = [int(w) for w in row[:tmp]], np.array([float(w) for w in row[tmp:]])
-                    print('attr: {}'.format(attr))
                 if not row[0] in feat_dict:
                     mapped = len(feat_dict)
                     feat_dict[row[0]] = mapped
                 node_tags.append(feat_dict[row[0]])
 
-                if tmp > len(row):
+                if tmp < len(row):
                     node_features.append(attr)
 
                 n_edges += row[1]
