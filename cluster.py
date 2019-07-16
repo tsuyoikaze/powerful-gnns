@@ -251,8 +251,7 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 		graph_label = np.argmax(counts)
 	'''
 	node_labels = [0] * len(feature)
-	print(feature)
-	input(' > ')
+	node_features = pca_model.transform(feature)
 
 	# print number of nodes and graph label
 	f.write('%d %d\n' % (len(graph), graph_label))
@@ -260,10 +259,12 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 	# print the graph
 	for node in graph.nodes:
 		targets = graph.adj[node]
+		node_feature = node_features[node]
 		num_edges = len(targets)
 		node_label = node_labels[node]
 		edges_str = ' '.join([str(x) for x in targets])
-		f.write('%d %d %s\n' % (node_label, num_edges, edges_str))
+		features_str = ' '.join([str(x) for x in node_feature])
+		f.write('%d %d %s %s\n' % (node_label, num_edges, edges_str, features_str))
 
 
 def main(argv):
