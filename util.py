@@ -63,8 +63,6 @@ def load_data(dataset, degree_as_tag):
                     mapped = len(feat_dict)
                     feat_dict[row[0]] = mapped
                 node_tags.append(feat_dict[row[0]])
-
-                print('tmp: {}, len(row): {}'.format(tmp, len(row)))
                 node_features.append(attr)
 
                 n_edges += row[1]
