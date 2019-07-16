@@ -18,7 +18,7 @@ class S2VGraph(object):
         self.g = g
         self.node_tags = node_tags
         self.neighbors = []
-        self.node_features = torch.tensor(node_features, dtype=torch.float64)
+        self.node_features = torch.tensor(node_features, dtype=torch.float32)
         self.edge_mat = 0
 
         self.max_neighbor = 0
