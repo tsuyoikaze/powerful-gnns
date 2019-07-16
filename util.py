@@ -18,7 +18,7 @@ class S2VGraph(object):
         self.g = g
         self.node_tags = node_tags
         self.neighbors = []
-        self.node_features = 0
+        self.node_features = torch.tensor(node_features, dtype=torch.float64)
         self.edge_mat = 0
 
         self.max_neighbor = 0
@@ -80,7 +80,7 @@ def load_data(dataset, degree_as_tag):
 
             #assert len(g) == n
             if len(g.edges) > 0:
-                g_list.append(S2VGraph(g, l, node_tags))
+                g_list.append(S2VGraph(g, l, node_tags, node_features))
     counter = 0
     #add labels and edge_mat       
     for g in g_list:
@@ -115,9 +115,11 @@ def load_data(dataset, degree_as_tag):
     tagset = list(tagset)
     tag2index = {tagset[i]:i for i in range(len(tagset))}
 
+    '''
     for g in g_list:
         g.node_features = torch.zeros(len(g.node_tags), len(tagset))
         g.node_features[range(len(g.node_tags)), [tag2index[tag] for tag in g.node_tags]] = 1
+    '''
 
 
     print('# classes: %d' % len(label_dict))
