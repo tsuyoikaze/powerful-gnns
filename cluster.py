@@ -252,7 +252,7 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 	'''
 	node_labels = [0] * len(feature)
 	print(feature)
-	raw_input(' > ')
+	input(' > ')
 
 	# print number of nodes and graph label
 	f.write('%d %d\n' % (len(graph), graph_label))
