@@ -236,7 +236,7 @@ def triangle_graph(l, measurement = 'average'):
 	return res
 
 
-def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'triangle', debug = True):
+def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'triangle', debug = False):
 
 	if graph_type == 'cutoff':
 		graph = cutoff_graphs([graph_fname], threshold = min_cutoff, threshold2 = max_cutoff)[0]
@@ -244,10 +244,15 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 		graph = triangle_graph([graph_fname])[0]
 	feature, y = prepare_features([feature_fname], patient_to_labels = patient_to_labels, label_method = 'labels')
 	graph_label = y[0]
+	'''
 	node_labels = kmeans_model.predict(pca_model.transform(feature))
 	if debug == True:
 		counts = np.bincount(node_labels)
 		graph_label = np.argmax(counts)
+	'''
+	node_labels = [0] * len(feature)
+	print(feature)
+	raw_input(' > ')
 
 	# print number of nodes and graph label
 	f.write('%d %d\n' % (len(graph), graph_label))
