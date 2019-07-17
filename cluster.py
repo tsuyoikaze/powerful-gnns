@@ -303,7 +303,7 @@ def main(argv):
 	print('getting elbow plot of PCA/LDA...')
 	plot_pca_elbow_plot(Xs, 1, 10, 'Elbow plot of PCA from 1 to 20 components', 'pca_elbow.png')
 	print('dimensional reducing via PCA')
-	Xs_reduced, pca_obj = pca(Xs)
+	Xs_reduced, pca_obj = pca(Xs, n_components=10)
 	'''
 	print('getting sihouette coefficient for K-means...')
 	sihouette_coef(Xs, 5, 20, 'Elbow plot of silhouette coefficient from 1 to 20 components', 'kmeans_elbow.png')
