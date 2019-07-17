@@ -1,6 +1,7 @@
 from util import S2VGraph
 import networkx as nx 
 import numpy as np 
+import torch
 
 def generate_sample(num_samples):
     res = []
