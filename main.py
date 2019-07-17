@@ -10,6 +10,8 @@ from tqdm import tqdm
 from util import load_data, separate_data
 from models.graphcnn import GraphCNN
 
+from generate_sample import generate_sample
+
 criterion = nn.CrossEntropyLoss()
 
 f = None
@@ -80,7 +82,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
 
     return acc_train, acc_test
 
-def main():
+def main(debug = True):
     # Training settings
     # Note: Hyper-parameters need to be tuned in order to obtain results reported in the paper.
     parser = argparse.ArgumentParser(description='PyTorch graph convolutional neural net for whole-graph classification')
@@ -134,6 +136,12 @@ def main():
     test_graphs, _ = load_data(data_dir + '_test.txt', args.degree_as_tag)
     valid_graphs, _ = load_data(data_dir + '_valid.txt', args.degree_as_tag)
 
+    if debug:
+        print('Debugging - load 1500 as training, 300 as validation, 1000 as testing')
+        train_graphs = generate_sample(1500)
+        valid_graphs = generate_sample(300)
+        test_graphs = generate_sample(1000)
+
     #10-fold cross validation removed due to different file processing method
     ##10-fold cross validation. Conduct an experiment on the fold specified by args.fold_idx.
     #train_graphs, test_graphs = separate_data(graphs, args.seed, args.fold_idx)
@@ -165,4 +173,4 @@ def main():
     
 
 if __name__ == '__main__':
-    main()
+    main(debug = True)
