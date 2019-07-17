@@ -31,10 +31,7 @@ def generate_sample(num_samples):
             degree_list.append(len(g.neighbors[i]))
         g.max_neighbor = max(degree_list)
 
-        g.label = label_dict[g.label]
-
         edges = [list(pair) for pair in g.g.edges()]
-        edges.extend([[i, j] for j, i in edges])
 
         deg_list = list(dict(g.g.degree(range(len(g.g)))).values())
         counter += 1
