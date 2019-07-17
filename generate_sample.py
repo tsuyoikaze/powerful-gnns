@@ -34,6 +34,5 @@ def generate_sample(num_samples):
         edges = [list(pair) for pair in g.g.edges()]
 
         deg_list = list(dict(g.g.degree(range(len(g.g)))).values())
-        counter += 1
         g.edge_mat = torch.LongTensor(edges).transpose(0,1)
     return res
