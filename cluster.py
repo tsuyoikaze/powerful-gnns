@@ -7,7 +7,6 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
 from sklearn.decomposition import LatentDirichletAllocation as LDA
-from sklearn.preprocessing import normalize
 import matplotlib.pyplot as plt
 import networkx as nx
 from scipy.spatial import Delaunay
@@ -312,7 +311,7 @@ def main(argv):
 	'''
 	print('normalizing subsampled data...')
 	mean, stdev = stats(Xs)
-	Xs = normalize(Xs, mean, stdev)
+	Xs = normalize_data(Xs, mean, stdev)
 	print('dimensional reducing via PCA')
 	Xs_reduced, pca_obj = pca(Xs, n_components=10)
 	'''
