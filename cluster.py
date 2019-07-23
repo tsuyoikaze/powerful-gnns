@@ -248,7 +248,7 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 	elif graph_type == 'triangle':
 		graph = triangle_graph([graph_fname])[0]
 	feature, y = prepare_features([feature_fname], patient_to_labels = patient_to_labels, label_method = 'labels')
-	if stats[0] != None:
+	if stats[0] is not None:
 		feature = normalize_data(feature, stats[0], stats[1])
 	graph_label = y[0]
 	'''
