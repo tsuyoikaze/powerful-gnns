@@ -241,13 +241,15 @@ def stats(data):
 def normalize_data(data, mean, stdev):
 	return (data - mean) / stdev
 
-def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'triangle', debug = False):
+def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'triangle', debug = False, stats = (None, None)):
 
 	if graph_type == 'cutoff':
 		graph = cutoff_graphs([graph_fname], threshold = min_cutoff, threshold2 = max_cutoff)[0]
 	elif graph_type == 'triangle':
 		graph = triangle_graph([graph_fname])[0]
 	feature, y = prepare_features([feature_fname], patient_to_labels = patient_to_labels, label_method = 'labels')
+	if stats[0] != None:
+		feature = normalize_data(feature, stats[0], stats[1])
 	graph_label = y[0]
 	'''
 	node_labels = kmeans_model.predict(pca_model.transform(feature))
@@ -329,7 +331,7 @@ def main(argv):
 
 	for i in range(len(fs)):
 		if pd.read_csv(gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
-			write_graph(gs[i], fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream)
+			write_graph(gs[i], fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, stats = (mean, stdev))
 			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(fs)))
@@ -347,7 +349,7 @@ def main(argv):
 
 	for i in range(len(valid_fs)):
 		if pd.read_csv(valid_gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
-			write_graph(valid_gs[i], valid_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, graph_type = 'cutoff')
+			write_graph(valid_gs[i], valid_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, stats = (mean, stdev))
 			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(valid_fs)))
@@ -365,7 +367,7 @@ def main(argv):
 
 	for i in range(len(test_fs)):
 		if pd.read_csv(test_gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
-			write_graph(test_gs[i], test_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream)
+			write_graph(test_gs[i], test_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, stats = (mean, stdev))
 			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(test_fs)))
