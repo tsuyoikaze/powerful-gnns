@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
 from sklearn.decomposition import LatentDirichletAllocation as LDA
+from sklearn.preprocessing import normalize
 import matplotlib.pyplot as plt
 import networkx as nx
 from scipy.spatial import Delaunay
@@ -235,6 +236,11 @@ def triangle_graph(l, measurement = 'average'):
 		res.append(G)
 	return res
 
+def stats(data):
+	return np.mean(data, axis=0), np.std(data, axis=0)
+
+def normalize_data(data, mean, stdev):
+	return (data - mean) / stdev
 
 def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'triangle', debug = False):
 
@@ -300,8 +306,13 @@ def main(argv):
 	fss = get_features(gss)
 	print('reading feature files...')
 	Xs, ys = prepare_features(fss)
+	'''
 	print('getting elbow plot of PCA/LDA...')
 	plot_pca_elbow_plot(Xs, 1, 10, 'Elbow plot of PCA from 1 to 20 components', 'pca_elbow.png')
+	'''
+	print('normalizing subsampled data...')
+	mean, stdev = stats(Xs)
+	Xs = normalize(Xs, mean, stdev)
 	print('dimensional reducing via PCA')
 	Xs_reduced, pca_obj = pca(Xs, n_components=10)
 	'''
