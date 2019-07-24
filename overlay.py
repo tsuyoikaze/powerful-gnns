@@ -35,7 +35,7 @@ def overlay(path, feature_path):
 
 
 	graph = triangle_graph([path])[0]
-	for e in graph.edges_iter():
+	for e in graph.edges():
 		source, target = e 
 		source, target = csv[source, 2:], csv[target, 2:]
 		draw.line([source, target], width = 5, fill = 128)
