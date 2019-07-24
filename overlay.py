@@ -42,7 +42,7 @@ def overlay(path, feature_path):
 		print(target)
 		draw.line([source, target], width = 5, fill = 128)
 
-	img.show()
+	img.save('test.png')
 
 if __name__ == '__main__':
 	overlay(sys.argv[1], sys.argv[2])
