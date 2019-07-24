@@ -26,12 +26,12 @@ def overlay(path, feature_path):
 		path = os.path.join(feature_path, i)
 		contents = os.listdir(path)
 		if _id in contents:
-			path = os.path.join(path, 'graph_{}.csv'.format(_number))
+			path = os.path.join(path, _id,  'graph_{}.csv'.format(_number))
 			break
 
 	print('found in path {}'.format(path))
 
-	csv = pd.read_csv(i).drop(columns=['Unnamed: 0']).values
+	csv = pd.read_csv(path).drop(columns=['Unnamed: 0']).values
 
 
 	graph = triangle_graph([path])[0]
