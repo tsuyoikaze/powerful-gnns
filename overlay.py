@@ -8,7 +8,7 @@ from cluster import triangle_graph
 
 pattern = r'SOB_(?P<type>B|M)_(?P<class>[A-Z]+)-(?P<id>\d+-[\d\w]+)-200-(?P<number>\d+).png'
 
-def overlay(path, feature_path)
+def overlay(path, feature_path):
 	
 	img = Image.open(path)
 	draw = ImageDraw.Draw(img)
