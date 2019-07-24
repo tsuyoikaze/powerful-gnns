@@ -40,9 +40,9 @@ def overlay(path, feature_path):
 		source, target = tuple(csv[source, 2:]), tuple(csv[target, 2:])
 		print(source)
 		print(target)
-		draw.line([source, target], width = 5, fill = 128)
+		draw.line([source, target], width = 1, fill = 128)
 
-	img.save('test.png')
+	img.save('{}-{}.png'.format(_id, _number))
 
 if __name__ == '__main__':
 	overlay(sys.argv[1], sys.argv[2])
