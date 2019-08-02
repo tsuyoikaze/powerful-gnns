@@ -211,3 +211,6 @@ def process_sample_main(source, dest):
                         graph.to_csv(os.path.join(dest_path, 'graph_%d.csv' % index))
                     for index, feature in enumerate(features, 1):
                         feature.to_csv(os.path.join(dest_path, 'feature_%d.csv' % index))
+
+if __name__ == '__main__':
+    process_sample_main(sys.argv[1], sys.argv[2])
