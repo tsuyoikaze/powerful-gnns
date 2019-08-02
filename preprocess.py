@@ -165,7 +165,9 @@ def process_sample(dir_path):
     for name, group in groups:
         ids.append(name)
         group = group.sort_values(by = ['cell_ObjectNumber'])
-        group = group.drop(columns=features_to_remove)
+        for feature_to_remoe in features_to_remove:
+            if feature_to_remoe in group.columns:
+                group = group.drop(columns=features_to_remove)
         # remove any NaN cell
         group = group.dropna()
         graph = group[['cell_AreaShape_Center_X', 'cell_AreaShape_Center_Y', 'nuc_AreaShape_Center_X', 'nuc_AreaShape_Center_Y']]
