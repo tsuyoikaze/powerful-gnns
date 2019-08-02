@@ -9,6 +9,11 @@ from shutil import copyfile
 metadata_labels = ['ImageNumber','ObjectNumber','Metadata_FileLocation','Metadata_Frame','Metadata_Series','Metadata_cancer_class','Metadata_cancer_type','Metadata_id','Metadata_patient','Metadata_patient.1']
 metadata_length = 10
 
+features_not_to_remove= ['Intensity_MassDisplacement_E', 'Location_CenterMassIntensity_X_E', 'Location_CenterMassIntensity_Y_E', 'Location_CenterMassIntensity_Z_E', 'Intensity_UpperQuartileIntensity_E', 'Intensity_UpperQuartileIntensity_H', 'Location_CenterMassIntensity_X_E', 'Location_CenterMassIntensity_X_H', 'Location_CenterMassIntensity_Y_E', 'Location_CenterMassIntensity_Y_H', 'Location_CenterMassIntensity_Z_E', 'Location_CenterMassIntensity_Z_H']
+features_to_remove = ['cell_AreaShape_Center_Z', 'nuc_AreaShape_Center_Z', 'cell_AreaShape_Orientation', 'nuc_AreaShape_Orientation', 'cell_Location_CenterMassIntensity_X_E', 'nuc_Location_CenterMassIntensity_X_E', 'cell_Location_CenterMassIntensity_X_H', 'nuc_Location_CenterMassIntensity_X_H', 'cell_Location_CenterMassIntensity_Y_E', 'nuc_Location_CenterMassIntensity_Y_E', 'cell_Location_CenterMassIntensity_Y_H', 'nuc_Location_CenterMassIntensity_Y_H', 'cell_Location_CenterMassIntensity_Z_E', 'nuc_Location_CenterMassIntensity_Z_E', 'cell_Location_CenterMassIntensity_Z_H', 'nuc_Location_CenterMassIntensity_Z_H', 'cell_Location_Center_X', 'nuc_Location_Center_X', 'cell_Location_Center_Y', 'nuc_Location_Center_Y', 'cell_Location_Center_Z', 'nuc_Location_Center_Z', 'cell_Location_MaxIntensity_X_E', 'nuc_Location_MaxIntensity_X_E', 'cell_Location_MaxIntensity_X_H', 'nuc_Location_MaxIntensity_X_H', 'cell_Location_MaxIntensity_Y_E', 'nuc_Location_MaxIntensity_Y_E', 'cell_Location_MaxIntensity_Y_H', 'nuc_Location_MaxIntensity_Y_H', 'cell_Location_MaxIntensity_Z_E', 'nuc_Location_MaxIntensity_Z_E', 'cell_Location_MaxIntensity_Z_H', 'nuc_Location_MaxIntensity_Z_H', 'cell_Number_Object_Number', 'nuc_Number_Object_Number', 'cell_Parent_PreNucleus', 'nuc_Parent_PreNucleus', 'cell_ImageNumber', 'nuc_ImageNumber', 'cell_ObjectNumber', 'nuc_ObjectNumber', 'cell_Metadata_FileLocation', 'nuc_Metadata_FileLocation', 'cell_Metadata_Frame', 'nuc_Metadata_Frame', 'cell_Metadata_Series', 'nuc_Metadata_Series', 'cell_Metadata_cancer_class', 'nuc_Metadata_cancer_class', 'cell_Metadata_cancer_class.1', 'nuc_Metadata_cancer_class.1', 'cell_Metadata_cancer_type', 'nuc_Metadata_cancer_type', 'cell_Metadata_cancer_type.1', 'nuc_Metadata_cancer_type.1', 'cell_Metadata_id', 'nuc_Metadata_id', 'cell_Metadata_patient', 'nuc_Metadata_patient', 'cell_Metadata_patient.1', 'nuc_Metadata_patient.1']
+graph_features_to_remove = ['cell_AreaShape_Center_X', 'nuc_AreaShape_Center_X', 'cell_AreaShape_Center_Y', 'nuc_AreaShape_Center_Y']
+
+
 
 def to_type(csv, label, dtype):
     '''
@@ -139,51 +144,20 @@ def read_dict(fname):
         res = json.load(f)
     return res
 
-
-def split_data_main(fname):
-    fpaths = []
-    for root, dirs, files in os.walk(fname, topdown=False):
-        for d in dirs:
-            if '-' in d:
-                fpaths.append(os.path.join(root, d))
-    labels, labels_dict = get_labels(fpaths)
-    bin_dict = binning(fpaths, labels)
-    train_x = np.array([])
-    train_y = np.array([])
-    valid_x = np.array([])
-    valid_y = np.array([])
-    test_x = np.array([])
-    test_y = np.array([])
-    for i in bin_dict:
-        tmp_labels = np.array([i] * len(bin_dict[i]))
-        (tmp_train_x, tmp_train_y), (tmp_valid_x, tmp_valid_y), (tmp_test_x, tmp_test_y) = split_data(bin_dict[i], tmp_labels, 3, p=np.array([0.4, 0.2, 0.4]))
-        train_x = np.hstack((train_x, tmp_train_x))
-        train_y = np.hstack((train_y, tmp_train_y))
-        valid_x = np.hstack((valid_x, tmp_valid_x))
-        valid_y = np.hstack((valid_y, tmp_valid_y))
-        test_x = np.hstack((test_x, tmp_test_x))
-        test_y = np.hstack((test_y, tmp_test_y))
-    print('{} files in total'.format(len(fpaths)))
-    print('Training: {} -> {}'.format(train_x.shape[0], train_x))
-    print('Validation: {} -> {}'.format(valid_x.shape[0], valid_x))
-    print('Testing: {} -> {}'.format(test_x.shape[0], test_x))
-    write_list(train_x, 'training_data_list.txt')
-    write_list(train_y.astype(int).astype(str), 'training_labels.txt')
-    write_list(valid_x, 'validation_data_list.txt')
-    write_list(valid_y.astype(int).astype(str), 'validation_labels.txt')
-    write_list(test_x, 'testing_data_list.txt')
-    write_list(test_y.astype(int).astype(str), 'testing_labels.txt')
-    write_dict(labels_dict, 'labels_dictionary.json')
-
-features_to_remove = ['cell_AreaShape_Center_Z', 'nuc_AreaShape_Center_Z', 'cell_AreaShape_Orientation', 'nuc_AreaShape_Orientation', 'cell_Location_CenterMassIntensity_X_E', 'nuc_Location_CenterMassIntensity_X_E', 'cell_Location_CenterMassIntensity_X_H', 'nuc_Location_CenterMassIntensity_X_H', 'cell_Location_CenterMassIntensity_Y_E', 'nuc_Location_CenterMassIntensity_Y_E', 'cell_Location_CenterMassIntensity_Y_H', 'nuc_Location_CenterMassIntensity_Y_H', 'cell_Location_CenterMassIntensity_Z_E', 'nuc_Location_CenterMassIntensity_Z_E', 'cell_Location_CenterMassIntensity_Z_H', 'nuc_Location_CenterMassIntensity_Z_H', 'cell_Location_Center_X', 'nuc_Location_Center_X', 'cell_Location_Center_Y', 'nuc_Location_Center_Y', 'cell_Location_Center_Z', 'nuc_Location_Center_Z', 'cell_Location_MaxIntensity_X_E', 'nuc_Location_MaxIntensity_X_E', 'cell_Location_MaxIntensity_X_H', 'nuc_Location_MaxIntensity_X_H', 'cell_Location_MaxIntensity_Y_E', 'nuc_Location_MaxIntensity_Y_E', 'cell_Location_MaxIntensity_Y_H', 'nuc_Location_MaxIntensity_Y_H', 'cell_Location_MaxIntensity_Z_E', 'nuc_Location_MaxIntensity_Z_E', 'cell_Location_MaxIntensity_Z_H', 'nuc_Location_MaxIntensity_Z_H', 'cell_Number_Object_Number', 'nuc_Number_Object_Number', 'cell_Parent_PreNucleus', 'nuc_Parent_PreNucleus', 'cell_ImageNumber', 'nuc_ImageNumber', 'cell_ObjectNumber', 'nuc_ObjectNumber', 'cell_Metadata_FileLocation', 'nuc_Metadata_FileLocation', 'cell_Metadata_Frame', 'nuc_Metadata_Frame', 'cell_Metadata_Series', 'nuc_Metadata_Series', 'cell_Metadata_cancer_class', 'nuc_Metadata_cancer_class', 'cell_Metadata_cancer_class.1', 'nuc_Metadata_cancer_class.1', 'cell_Metadata_cancer_type', 'nuc_Metadata_cancer_type', 'cell_Metadata_cancer_type.1', 'nuc_Metadata_cancer_type.1', 'cell_Metadata_id', 'nuc_Metadata_id', 'cell_Metadata_patient', 'nuc_Metadata_patient', 'cell_Metadata_patient.1', 'nuc_Metadata_patient.1']
-graph_features_to_remove = ['cell_AreaShape_Center_X', 'nuc_AreaShape_Center_X', 'cell_AreaShape_Center_Y', 'nuc_AreaShape_Center_Y']
-
 def process_sample(dir_path):
+
+    # load csv
     cell_csv = pd.read_csv(os.path.join(dir_path, 'Cell.csv')).add_prefix('cell_')
     nucleus_csv = pd.read_csv(os.path.join(dir_path, 'Nucleus.csv')).add_prefix('nuc_')
+
+    # combine and filter out small parts
     combined_csv = pd.concat([cell_csv, nucleus_csv], axis = 1)
     combined_csv = combined_csv[combined_csv['cell_AreaShape_Area'] >= 10]
     combined_csv = combined_csv[combined_csv['nuc_AreaShape_Area'] >= 10]
+
+    # assign NaN intensities to 0
+    # combined_csv[features_not_to_remove].fillna(value = 0.0)
+
     groups = combined_csv.groupby('cell_Metadata_id')
     features = []
     graphs = []
@@ -196,57 +170,44 @@ def process_sample(dir_path):
         group = group.dropna()
         graph = group[['cell_AreaShape_Center_X', 'cell_AreaShape_Center_Y', 'nuc_AreaShape_Center_X', 'nuc_AreaShape_Center_Y']]
         group = group.drop(columns=graph_features_to_remove)
-        for img_type in ['cell_', 'nuc_']:
-            for feat_type in ['RadialDistribution_FracAtD_E_', 'RadialDistribution_FracAtD_H_', 'RadialDistribution_MeanFrac_E_', 'RadialDistribution_MeanFrac_H_', 'RadialDistribution_RadialCV_E_', 'RadialDistribution_RadialCV_H_']:
-                group[img_type + feat_type + 'max'] = group[[img_type + feat_type + x + 'of4' for x in '1234']].max(axis=1)
-                group = group.drop(columns = [img_type + feat_type + x + 'of4' for x in '1234'])
+        #for img_type in ['cell_', 'nuc_']:
+        #    for feat_type in ['RadialDistribution_FracAtD_E_', 'RadialDistribution_FracAtD_H_', 'RadialDistribution_MeanFrac_E_', 'RadialDistribution_MeanFrac_H_', 'RadialDistribution_RadialCV_E_', 'RadialDistribution_RadialCV_H_']:
+        #        group[img_type + feat_type + 'max'] = group[[img_type + feat_type + x + 'of4' for x in '1234']].max(axis=1)
+        #        group = group.drop(columns = [img_type + feat_type + x + 'of4' for x in '1234'])
         feature = group
         graphs.append(graph)
         features.append(feature)
     return graphs, features, ids
 
-def process_sample_main(dest):
-    train_x_list = read_list('training_data_list.txt')
-    valid_x_list = read_list('validation_data_list.txt')
-    test_x_list = read_list('testing_data_list.txt')
-    for item in train_x_list:
-        graphs, features, ids = process_sample(item)
-        os.makedirs(os.path.join(dest, 'train', item))
-        for index, graph in zip(ids, graphs):
-            graph.to_csv(os.path.join(dest, 'train', item, 'graph_{}.csv'.format(index)))
-        for index, feature in zip(ids, features):
-            feature.to_csv(os.path.join(dest, 'train', item, 'feature_{}.csv'.format(index)))
-    for item in valid_x_list:
-        graphs, features, ids = process_sample(item)
-        os.makedirs(os.path.join(dest, 'valid', item))
-        for index, graph in zip(ids, graphs):
-            graph.to_csv(os.path.join(dest, 'valid', item, 'graph_{}.csv'.format(index)))
-        for index, feature in zip(ids, features):
-            feature.to_csv(os.path.join(dest, 'valid', item, 'feature_{}.csv'.format(index)))
-    for item in test_x_list:
-        graphs, features, ids = process_sample(item)
-        os.makedirs(os.path.join(dest, 'test', item))
-        for index, graph in zip(ids, graphs):
-            graph.to_csv(os.path.join(dest, 'test', item, 'graph_{}.csv'.format(index)))
-        for index, feature in zip(ids, features):
-            feature.to_csv(os.path.join(dest, 'test', item, 'feature_{}.csv'.format(index)))
-
-
-def process_sample_main_new(dest):
-    for i in '12345':
-        dest_path = os.path.join(dest, 'fold%s' % i)
-        if not os.path.exists(dest_path):
-            os.makedirs(dest_path)
-        with open('dsfold%s.txt' % i) as f:
+def process_sample_main(source, dest):
+    folds = []
+    for fold in '12345':
+        img_dataset = dict()
+        with open('dsfold%s.txt' % fold) as f:
             img_list = f.read().splitlines()
-        img_dict = dict()
-        for line in img_list:
-            img_name, mag, _, set_type = line.split('|')
-            if mag == '200':
-                print(img_name)
-                cancer_class, cancer_type, patient, p_id = re.match('SOB_(?P<cancer_class>\w+)_(?P<cancer_type>\w+)-(?P<patient>[\w\d-]+)-\d+-(?P<id>\d+)\.png', img_name).groups()
-                p_id = str(int(p_id))
-                if not os.path.exists(os.path.join(dest, 'fold' + i, set_type, patient)):
-                    os.makedirs(os.path.join(dest, 'fold' + i, set_type, patient))
-                copyfile(os.path.join('features_200x_splitted', cancer_class, cancer_type, patient, 'graph_{}.csv'.format(p_id)), os.path.join(dest, 'fold' + i, set_type, patient, 'graph_{}.csv'.format(p_id)))
-                copyfile(os.path.join('features_200x_splitted', cancer_class, cancer_type, patient, 'feature_{}.csv'.format(p_id)), os.path.join(dest, 'fold' + i, set_type, patient, 'feature_{}.csv'.format(p_id)))
+        for img in img_list:
+            cancer_class, cancer_type, patient, p_id, magnitude, dataset_type = re.match(r'SOB_(?P<cancer_class>\w+)_(?P<cancer_type>\w+)-(?P<patient>[\w\d-]+)-\d+-(?P<id>\d+)\.png\|(?P<magnitude>\d+)\|\d+\|(?P<dataset>\w+)', img).groups()
+            source_csv_path = os.path.join(source, cancer_class, cancer_type, patient)
+            if source_csv_path not in img_dataset:
+                img_dataset[source_csv_path] = dataset_type
+        folds.append(img_dataset)
+
+    cancer_classes = os.listdir(source)
+    for c in cancer_classes:
+        c_path = os.path.join(source, c)
+        cancer_types = os.listdir(c_path)
+        for t in cancer_types:
+            t_path = os.path.join(c_path, t)
+            patients = os.listdir(t_path)
+            for p in patients:
+                source_csv_path = os.path.join(t_path, p)
+                graphs, features, ids = process_sample(source_csv_path)
+                for i in range(5):
+                    fold = str(i + 1)
+                    dataset_type = folds[i][source_csv_path]
+                    dest_path = os.path.join(dest, 'fold%s' % fold, dataset_type, p)
+                    os.makedirs(dest_path, exist_ok=True)
+                    for index, graph in enumerate(graphs, 1):
+                        graph.to_csv(os.path.join(dest_path, 'graph_%d.csv' % index))
+                    for index, feature in enumerate(features, 1):
+                        feature.to_csv(os.path.join(dest_path, 'feature_%d.csv' % index))
