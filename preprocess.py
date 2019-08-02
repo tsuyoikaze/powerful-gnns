@@ -196,15 +196,15 @@ def process_sample_main(source, dest, fold_path):
         print('done for fold %s' % fold)
 
     print('\nprocessing features')
-    cancer_classes = [x for x in os.listdir(source) if os.isdir(os.path.join(source, x))]
+    cancer_classes = [x for x in os.listdir(source) if os.path.isdir(os.path.join(source, x))]
     for c in cancer_classes:
         print('  processing class %s' % c)
         c_path = os.path.join(source, c)
-        cancer_types = [x for x in os.listdir(c_path) if os.isdir(os.path.join(c_path, x))]
+        cancer_types = [x for x in os.listdir(c_path) if os.path.isdir(os.path.join(c_path, x))]
         for t in cancer_types:
             print('    processing type %s' % t)
             t_path = os.path.join(c_path, t)
-            patients = [x for x in os.listdir(t_path) if os.isdir(os.path.join(t_path, x))]
+            patients = [x for x in os.listdir(t_path) if os.path.isdir(os.path.join(t_path, x))]
             for p in patients:
                 print('      processing patient %s' % p)
                 source_csv_path = os.path.join(t_path, p)
