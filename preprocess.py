@@ -180,6 +180,8 @@ def process_sample(dir_path):
     return graphs, features, ids
 
 def process_sample_main(source, dest, fold_path):
+
+    print('constructing database for 5-folds cross validation')
     folds = []
     for fold in '12345':
         img_dataset = dict()
@@ -191,15 +193,20 @@ def process_sample_main(source, dest, fold_path):
             if source_csv_path not in img_dataset:
                 img_dataset[source_csv_path] = dataset_type
         folds.append(img_dataset)
+        print('done for fold %s' % fold)
 
-    cancer_classes = os.listdir(source)
+    print('\nprocessing features')
+    cancer_classes = [x for x in os.listdir(source) if os.isdir(os.path.join(source, x))]
     for c in cancer_classes:
+        print('  processing class %s' % c)
         c_path = os.path.join(source, c)
-        cancer_types = os.listdir(c_path)
+        cancer_types = [x for x in os.listdir(c_path) if os.isdir(os.path.join(c_path, x))]
         for t in cancer_types:
+            print('    processing type %s' % t)
             t_path = os.path.join(c_path, t)
-            patients = os.listdir(t_path)
+            patients = [x for x in os.listdir(t_path) if os.isdir(os.path.join(t_path, x))]
             for p in patients:
+                print('      processing patient %s' % p)
                 source_csv_path = os.path.join(t_path, p)
                 graphs, features, ids = process_sample(source_csv_path)
                 for i in range(5):
