@@ -179,11 +179,11 @@ def process_sample(dir_path):
         features.append(feature)
     return graphs, features, ids
 
-def process_sample_main(source, dest):
+def process_sample_main(source, dest, fold_path):
     folds = []
     for fold in '12345':
         img_dataset = dict()
-        with open('dsfold%s.txt' % fold) as f:
+        with open(os.path.join(fold_path, 'dsfold%s.txt' % fold)) as f:
             img_list = f.read().splitlines()
         for img in img_list:
             cancer_class, cancer_type, patient, p_id, magnitude, dataset_type = re.match(r'SOB_(?P<cancer_class>\w+)_(?P<cancer_type>\w+)-(?P<patient>[\w\d-]+)-\d+-(?P<id>\d+)\.png\|(?P<magnitude>\d+)\|\d+\|(?P<dataset>\w+)', img).groups()
@@ -213,4 +213,4 @@ def process_sample_main(source, dest):
                         feature.to_csv(os.path.join(dest_path, 'feature_%d.csv' % index))
 
 if __name__ == '__main__':
-    process_sample_main(sys.argv[1], sys.argv[2])
+    process_sample_main(sys.argv[1], sys.argv[2], sys.argv[3])
