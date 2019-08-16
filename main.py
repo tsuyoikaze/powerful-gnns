@@ -66,7 +66,7 @@ def pass_data_iteratively(model, graphs, minibatch_size = 64):
         output.append(model([graphs[j] for j in sampled_idx]).detach())
     return torch.cat(output, 0)
 
-def test(args, model, device, train_graphs, test_graphs, epoch):
+def test(args, model, device, train_graphs, test_graphs, epoch, f):
     model.eval()
 
     output = pass_data_iteratively(model, train_graphs)
@@ -88,6 +88,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
     for i in range(total_classes):
         train_res[i] = float(train_res[i]) / train_total_number[i]
         print('  subclass %d accuracy: %f' % (i, train_res[i]))
+        f.write('train subclass %d acc: %f\n' % (i, train_res[i]))
 
     output = pass_data_iteratively(model, test_graphs)
     pred = output.max(1, keepdim=True)[1]
@@ -108,6 +109,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
         if test_total_number[i] != 0:
             test_res[i] = float(test_res[i]) / test_total_number[i]
             print('  subclass %d accuracy: %f' % (i, test_res[i]))
+            f.write('test subclass %d acc: %f\n' % (i, test_res[i]))
 
     return acc_train, acc_test
 
@@ -191,7 +193,7 @@ def main(debug = True):
         scheduler.step()
 
         avg_loss = train(args, model, device, train_graphs, optimizer, epoch)
-        acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch)
+        acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch, f)
         #acc_train, acc_test = test(args, model, device, train_graphs, test_graphs, epoch)
 
         if not args.filename == "":
