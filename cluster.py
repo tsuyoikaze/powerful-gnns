@@ -133,8 +133,9 @@ def prepare_features(l, patient_to_labels = None, patient_to_class = None, label
 		else:
 			res = np.vstack((res, tmp))
 	graph_class = []
-	for i in l:
-		graph_class.append(patient_to_class[i.split('/')[-2]])
+	if patient_to_class != None:
+		for i in l:
+			graph_class.append(patient_to_class[i.split('/')[-2]])
 	return res , y, graph_class
 
 def pca(X, n_components = 4):
@@ -315,7 +316,7 @@ def main(argv):
 	
 	fss = get_features(gss)
 	print('reading feature files...')
-	Xs, ys = prepare_features(fss)
+	Xs, ys, _ = prepare_features(fss)
 	'''
 	print('getting elbow plot of PCA/LDA...')
 	plot_pca_elbow_plot(Xs, 1, 10, 'Elbow plot of PCA from 1 to 20 components', 'pca_elbow.png')
