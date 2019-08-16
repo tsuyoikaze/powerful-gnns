@@ -106,8 +106,9 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
         test_res[test_graphs[i].graph_class] += 1 if labels[i] == pred[i] else 0
         test_total_number[test_graphs[i].graph_class] += 1
     for i in range(total_classes):
-        test_res[i] = float(test_res[i]) / test_total_number[i]
-        print('  subclass %d accuracy: %f' % (i, test_res[i]))
+        if test_total_number[i] != 0:
+            test_res[i] = float(test_res[i]) / test_total_number[i]
+            print('  subclass %d accuracy: %f' % (i, test_res[i]))
 
     return acc_train, acc_test
 
