@@ -112,7 +112,7 @@ def generate_even(l, patient_to_labels):
 		r += res[i]
 	return r
 
-def prepare_features(l, patient_to_labels = None, label_method='patient'):
+def prepare_features(l, patient_to_labels = None, patient_to_class = None, label_method='patient'):
 	'''
 	Get features prepared and labels outlined
 	'''
@@ -132,7 +132,10 @@ def prepare_features(l, patient_to_labels = None, label_method='patient'):
 			res = tmp
 		else:
 			res = np.vstack((res, tmp))
-	return res , y
+	graph_class = []
+	for i in l:
+		graph_class.append(patient_to_class[i.split('/')[-2]])
+	return res , y, graph_class
 
 def pca(X, n_components = 4):
 	p = PCA(n_components=n_components)
@@ -245,13 +248,13 @@ def stats(data):
 def normalize_data(data, mean, stdev):
 	return (data - mean) / stdev
 
-def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, f, graph_type = 'triangle', debug = False, stats = (None, None)):
+def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, max_cutoff, patient_to_labels, patient_to_class, f, graph_type = 'triangle', debug = False, stats = (None, None)):
 
 	if graph_type == 'cutoff':
 		graph = cutoff_graphs([graph_fname], threshold = min_cutoff, threshold2 = max_cutoff)[0]
 	elif graph_type == 'triangle':
 		graph = triangle_graph([graph_fname])[0]
-	feature, y = prepare_features([feature_fname], patient_to_labels = patient_to_labels, label_method = 'labels')
+	feature, y, graph_class = prepare_features([feature_fname], patient_to_labels = patient_to_labels, patient_to_class = patient_to_class, label_method = 'labels')
 	if stats[0] is not None:
 		feature = normalize_data(feature, stats[0], stats[1])
 	graph_label = y[0]
@@ -265,7 +268,7 @@ def write_graph(graph_fname, feature_fname, pca_model, kmeans_model,min_cutoff, 
 	node_features = pca_model.transform(feature)
 
 	# print number of nodes and graph label
-	f.write('%d %d\n' % (len(graph), graph_label))
+	f.write('%d %d %d\n' % (len(graph), graph_label, graph_class[0]))
 
 	# print the graph
 	for node in graph.nodes:
@@ -285,11 +288,13 @@ def main(argv):
 	max_cutoff = float(argv[6])
 	k_kmeans = int(argv[7])
 	path_json = argv[8]
-	path_output = argv[9]
-	valid_path_output = argv[10]
-	test_path_output = argv[11]
+	path_class_json = argv[9]
+	path_output = argv[10]
+	valid_path_output = argv[11]
+	test_path_output = argv[12]
 
 	patient_to_labels = json.load(open(path_json))
+	patient_to_class = json.load(open(path_class_json))
 
 	print('retriving images in training set {}'.format(argv[1]))
 	gs = get_graphs(argv[1])
@@ -335,7 +340,7 @@ def main(argv):
 
 	for i in range(len(fs)):
 		if pd.read_csv(gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
-			write_graph(gs[i], fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, stats = (mean, stdev))
+			write_graph(gs[i], fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, patient_to_class, graph_contents_stream, stats = (mean, stdev))
 			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(fs)))
@@ -353,7 +358,7 @@ def main(argv):
 
 	for i in range(len(valid_fs)):
 		if pd.read_csv(valid_gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
-			write_graph(valid_gs[i], valid_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, stats = (mean, stdev))
+			write_graph(valid_gs[i], valid_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, patient_to_class, graph_contents_stream, stats = (mean, stdev))
 			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(valid_fs)))
@@ -371,7 +376,7 @@ def main(argv):
 
 	for i in range(len(test_fs)):
 		if pd.read_csv(test_gs[i]).drop(columns=['Unnamed: 0']).values.shape[0] >= 4:
-			write_graph(test_gs[i], test_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, graph_contents_stream, stats = (mean, stdev))
+			write_graph(test_gs[i], test_fs[i], pca_obj, kmeans_obj, min_cutoff, max_cutoff, patient_to_labels, patient_to_class, graph_contents_stream, stats = (mean, stdev))
 			ctr += 1
 		if ctr % 100 == 0:
 			print('processing %d / %d' % (ctr, len(test_fs)))

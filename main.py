@@ -75,12 +75,39 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
     correct = pred.eq(labels.view_as(pred)).sum().cpu().item()
     acc_train = correct / float(len(train_graphs))
 
+    total_classes = len(np.unique(train_classes))
+
+    train_classes = [i.graph_class for i in train_graphs]
+    train_res = [0] * total_classes
+    train_total_number = [0] * total_classes
+
+    print('accuracy train: %f' % acc_train)
+
+    for i in range(len(train_graphs)):
+        train_res[train_graphs[i].graph_class] += 1 if labels[i] == pred[i] else 0
+        train_total_number[train_graphs[i].graph_class] += 1
+    for i in range(total_classes):
+        train_res[i] = float(train_res[i]) / train_total_number[i]
+        print('  subclass %d accuracy: %f' % (i, train_res[i]))
+
     output = pass_data_iteratively(model, test_graphs)
     pred = output.max(1, keepdim=True)[1]
     labels = torch.LongTensor([graph.label for graph in test_graphs]).to(device)
     correct = pred.eq(labels.view_as(pred)).sum().cpu().item()
     acc_test = correct / float(len(test_graphs))
-    print("accuracy train: %f test: %f" % (acc_train, acc_test))
+    
+    test_classes = [i.graph_class for i in test_graphs]
+    test_res = [0] * total_classes
+    test_total_number = [0] * total_classes
+
+    print('accuracy test: %f' % acc_test)
+    
+    for i in range(len(test_graphs)):
+        test_res[test_graphs[i].graph_class] += 1 if labels[i] == pred[i] else 0
+        test_total_number[test_graphs[i].graph_class] += 1
+    for i in range(total_classes):
+        test_res[i] = float(test_res[i]) / test_total_number[i]
+        print('  subclass %d accuracy: %f' % (i, test_res[i]))
 
     return acc_train, acc_test
 

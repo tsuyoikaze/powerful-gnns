@@ -41,7 +41,11 @@ def load_data(dataset, degree_as_tag):
         n_g = int(f.readline().strip())
         for i in range(n_g):
             row = f.readline().strip().split()
-            n, l = [int(w) for w in row]
+            arr = [int(w) for w in row]
+            n, l = arr[0], arr[1]
+            graph_class = None
+            if len(arr) == 3:
+                graph_class = arr[2]
             if not l in label_dict:
                 mapped = len(label_dict)
                 label_dict[l] = mapped
@@ -78,7 +82,9 @@ def load_data(dataset, degree_as_tag):
 
             #assert len(g) == n
             if len(g.edges) > 0:
-                g_list.append(S2VGraph(g, l, node_tags, node_features))
+                s2v_graph = S2VGraph(g, l, node_tags, node_features)
+                s2v_graph.graph_class = graph_class
+                g_list.append(s2v_graph)
     counter = 0
     #add labels and edge_mat       
     for g in g_list:
