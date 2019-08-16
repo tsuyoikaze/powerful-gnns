@@ -89,7 +89,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f):
     for i in range(total_classes):
         train_res[i] = float(train_res[i]) / train_total_number[i]
         print('  subclass %d accuracy: %f' % (i, train_res[i]))
-        f.write('%f' % train_res[i])
+        f.write('%f,' % train_res[i])
 
     f.write('\n')
 
@@ -113,7 +113,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f):
         if test_total_number[i] != 0:
             test_res[i] = float(test_res[i]) / test_total_number[i]
             print('  subclass %d accuracy: %f' % (i, test_res[i]))
-            f.write('%f' % test_res[i])
+            f.write('%f,' % test_res[i])
     f.write('\n')
 
     return acc_train, acc_test
