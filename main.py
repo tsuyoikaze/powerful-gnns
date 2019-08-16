@@ -81,6 +81,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f):
     train_total_number = [0] * total_classes
 
     print('accuracy train: %f' % acc_train)
+    f.write('train detailed acc: ')
 
     for i in range(len(train_graphs)):
         train_res[train_graphs[i].graph_class] += 1 if labels[i] == pred[i] else 0
@@ -88,7 +89,9 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f):
     for i in range(total_classes):
         train_res[i] = float(train_res[i]) / train_total_number[i]
         print('  subclass %d accuracy: %f' % (i, train_res[i]))
-        f.write('train subclass %d acc: %f\n' % (i, train_res[i]))
+        f.write('%f' % train_res[i])
+
+    f.write('\n')
 
     output = pass_data_iteratively(model, test_graphs)
     pred = output.max(1, keepdim=True)[1]
@@ -101,6 +104,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f):
     test_total_number = [0] * total_classes
 
     print('accuracy test: %f' % acc_test)
+    f.write('test detailed acc: ')
     
     for i in range(len(test_graphs)):
         test_res[test_graphs[i].graph_class] += 1 if labels[i] == pred[i] else 0
@@ -109,7 +113,8 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f):
         if test_total_number[i] != 0:
             test_res[i] = float(test_res[i]) / test_total_number[i]
             print('  subclass %d accuracy: %f' % (i, test_res[i]))
-            f.write('test subclass %d acc: %f\n' % (i, test_res[i]))
+            f.write('%f' % test_res[i])
+    f.write('\n')
 
     return acc_train, acc_test
 
@@ -186,7 +191,7 @@ def main(debug = True):
     if not args.filename == '':
         f = open(args.filename, 'w')
         f.write('loss, train_acc, valid_acc\n')
-    pre_acc_train, pre_acc_valid = test(args, model, device, train_graphs, valid_graphs, 0)
+    pre_acc_train, pre_acc_valid = test(args, model, device, train_graphs, valid_graphs, 0, f)
     print('Pre training: train: %f, test: %f' % (pre_acc_train, pre_acc_valid))
     #compute loss and accuracies of train, test, and validation for each epoch
     for epoch in range(1, args.epochs + 1):
