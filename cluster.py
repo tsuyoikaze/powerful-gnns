@@ -119,7 +119,11 @@ def prepare_features(l, patient_to_labels = None, label_method='patient'):
 	res = []
 	y = []
 	for idx, i in enumerate(l):
-		tmp = pd.read_csv(i).drop(columns=['Unnamed: 0']).values
+		tmp = pd.read_csv(i).drop(columns=['Unnamed: 0', 'nuc_Children_Cell_Count'])
+		for label in tmp.columns:
+			if 'Metadata' in label:
+				tmp = tmp.drop(columns = [label])
+		tmp = tmp.values
 		if label_method == 'patient':
 			y += [idx] * len(tmp)
 		elif label_method == 'labels':
@@ -315,7 +319,7 @@ def main(argv):
 	mean, stdev = stats(Xs)
 	Xs = normalize_data(Xs, mean, stdev)
 	print('dimensional reducing via PCA')
-	Xs_reduced, pca_obj = pca(Xs, n_components=10)
+	Xs_reduced, pca_obj = pca(Xs, n_components=3)
 	'''
 	print('getting sihouette coefficient for K-means...')
 	sihouette_coef(Xs, 5, 20, 'Elbow plot of silhouette coefficient from 1 to 20 components', 'kmeans_elbow.png')

@@ -9,7 +9,7 @@ from shutil import copyfile
 metadata_labels = ['ImageNumber','ObjectNumber','Metadata_FileLocation','Metadata_Frame','Metadata_Series','Metadata_cancer_class','Metadata_cancer_type','Metadata_id','Metadata_patient','Metadata_patient.1']
 metadata_length = 10
 
-features_not_to_remove= ['Intensity_MassDisplacement_E', 'Location_CenterMassIntensity_X_E', 'Location_CenterMassIntensity_Y_E', 'Location_CenterMassIntensity_Z_E', 'Intensity_UpperQuartileIntensity_E', 'Intensity_UpperQuartileIntensity_H', 'Location_CenterMassIntensity_X_E', 'Location_CenterMassIntensity_X_H', 'Location_CenterMassIntensity_Y_E', 'Location_CenterMassIntensity_Y_H', 'Location_CenterMassIntensity_Z_E', 'Location_CenterMassIntensity_Z_H']
+features_not_to_remove= ['cell_Intensity_MassDisplacement_E', 'nuc_Intensity_MassDisplacement_E', 'cell_Location_CenterMassIntensity_X_E', 'nuc_Location_CenterMassIntensity_X_E', 'cell_Location_CenterMassIntensity_Y_E', 'nuc_Location_CenterMassIntensity_Y_E', 'cell_Location_CenterMassIntensity_Z_E', 'nuc_Location_CenterMassIntensity_Z_E', 'cell_Intensity_UpperQuartileIntensity_E', 'nuc_Intensity_UpperQuartileIntensity_E', 'cell_Intensity_UpperQuartileIntensity_H', 'nuc_Intensity_UpperQuartileIntensity_H', 'cell_Location_CenterMassIntensity_X_E', 'nuc_Location_CenterMassIntensity_X_E', 'cell_Location_CenterMassIntensity_X_H', 'nuc_Location_CenterMassIntensity_X_H', 'cell_Location_CenterMassIntensity_Y_E', 'nuc_Location_CenterMassIntensity_Y_E', 'cell_Location_CenterMassIntensity_Y_H', 'nuc_Location_CenterMassIntensity_Y_H', 'cell_Location_CenterMassIntensity_Z_E', 'nuc_Location_CenterMassIntensity_Z_E', 'cell_Location_CenterMassIntensity_Z_H', 'nuc_Location_CenterMassIntensity_Z_H']
 features_to_remove = ['cell_AreaShape_Center_Z', 'nuc_AreaShape_Center_Z', 'cell_AreaShape_Orientation', 'nuc_AreaShape_Orientation', 'cell_Location_CenterMassIntensity_X_E', 'nuc_Location_CenterMassIntensity_X_E', 'cell_Location_CenterMassIntensity_X_H', 'nuc_Location_CenterMassIntensity_X_H', 'cell_Location_CenterMassIntensity_Y_E', 'nuc_Location_CenterMassIntensity_Y_E', 'cell_Location_CenterMassIntensity_Y_H', 'nuc_Location_CenterMassIntensity_Y_H', 'cell_Location_CenterMassIntensity_Z_E', 'nuc_Location_CenterMassIntensity_Z_E', 'cell_Location_CenterMassIntensity_Z_H', 'nuc_Location_CenterMassIntensity_Z_H', 'cell_Location_Center_X', 'nuc_Location_Center_X', 'cell_Location_Center_Y', 'nuc_Location_Center_Y', 'cell_Location_Center_Z', 'nuc_Location_Center_Z', 'cell_Location_MaxIntensity_X_E', 'nuc_Location_MaxIntensity_X_E', 'cell_Location_MaxIntensity_X_H', 'nuc_Location_MaxIntensity_X_H', 'cell_Location_MaxIntensity_Y_E', 'nuc_Location_MaxIntensity_Y_E', 'cell_Location_MaxIntensity_Y_H', 'nuc_Location_MaxIntensity_Y_H', 'cell_Location_MaxIntensity_Z_E', 'nuc_Location_MaxIntensity_Z_E', 'cell_Location_MaxIntensity_Z_H', 'nuc_Location_MaxIntensity_Z_H', 'cell_Number_Object_Number', 'nuc_Number_Object_Number', 'cell_Parent_PreNucleus', 'nuc_Parent_PreNucleus', 'cell_ImageNumber', 'nuc_ImageNumber', 'cell_ObjectNumber', 'nuc_ObjectNumber', 'cell_Metadata_FileLocation', 'nuc_Metadata_FileLocation', 'cell_Metadata_Frame', 'nuc_Metadata_Frame', 'cell_Metadata_Series', 'nuc_Metadata_Series', 'cell_Metadata_cancer_class', 'nuc_Metadata_cancer_class', 'cell_Metadata_cancer_class.1', 'nuc_Metadata_cancer_class.1', 'cell_Metadata_cancer_type', 'nuc_Metadata_cancer_type', 'cell_Metadata_cancer_type.1', 'nuc_Metadata_cancer_type.1', 'cell_Metadata_id', 'nuc_Metadata_id', 'cell_Metadata_patient', 'nuc_Metadata_patient', 'cell_Metadata_patient.1', 'nuc_Metadata_patient.1']
 graph_features_to_remove = ['cell_AreaShape_Center_X', 'nuc_AreaShape_Center_X', 'cell_AreaShape_Center_Y', 'nuc_AreaShape_Center_Y']
 
@@ -156,7 +156,7 @@ def process_sample(dir_path):
     combined_csv = combined_csv[combined_csv['nuc_AreaShape_Area'] >= 10]
 
     # assign NaN intensities to 0
-    # combined_csv[features_not_to_remove].fillna(value = 0.0)
+    combined_csv[features_not_to_remove].fillna(value = 0.0)
 
     groups = combined_csv.groupby('cell_Metadata_id')
     features = []
@@ -168,14 +168,15 @@ def process_sample(dir_path):
         for feature_to_remove in features_to_remove:
             if feature_to_remove in group.columns:
                 group = group.drop(columns=feature_to_remove)
+        
         # remove any NaN cell
         group = group.dropna()
         graph = group[['cell_AreaShape_Center_X', 'cell_AreaShape_Center_Y', 'nuc_AreaShape_Center_X', 'nuc_AreaShape_Center_Y']]
         group = group.drop(columns=graph_features_to_remove)
-        #for img_type in ['cell_', 'nuc_']:
-        #    for feat_type in ['RadialDistribution_FracAtD_E_', 'RadialDistribution_FracAtD_H_', 'RadialDistribution_MeanFrac_E_', 'RadialDistribution_MeanFrac_H_', 'RadialDistribution_RadialCV_E_', 'RadialDistribution_RadialCV_H_']:
-        #        group[img_type + feat_type + 'max'] = group[[img_type + feat_type + x + 'of4' for x in '1234']].max(axis=1)
-        #        group = group.drop(columns = [img_type + feat_type + x + 'of4' for x in '1234'])
+        for img_type in ['cell_', 'nuc_']:
+            for feat_type in ['RadialDistribution_FracAtD_E_', 'RadialDistribution_FracAtD_H_', 'RadialDistribution_MeanFrac_E_', 'RadialDistribution_MeanFrac_H_', 'RadialDistribution_RadialCV_E_', 'RadialDistribution_RadialCV_H_']:
+                group[img_type + feat_type + 'max'] = group[[img_type + feat_type + x + 'of4' for x in '1234']].max(axis=1)
+                group = group.drop(columns = [img_type + feat_type + x + 'of4' for x in '1234'])
         feature = group
         graphs.append(graph)
         features.append(feature)

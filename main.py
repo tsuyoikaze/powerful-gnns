@@ -12,6 +12,8 @@ from models.graphcnn import GraphCNN
 
 from generate_sample import generate_sample
 
+torch.manual_seed(0)
+
 criterion = nn.CrossEntropyLoss()
 
 f = None
@@ -136,6 +138,7 @@ def main(debug = True):
     test_graphs, _ = load_data(data_dir + '_test.txt', args.degree_as_tag)
     valid_graphs, _ = load_data(data_dir + '_valid.txt', args.degree_as_tag)
 
+
     if debug:
         print('Debugging - load 1500 as training, 300 as validation, 1000 as testing')
         train_graphs = generate_sample(1500)
@@ -154,16 +157,18 @@ def main(debug = True):
     if not args.filename == '':
         f = open(args.filename, 'w')
         f.write('loss, train_acc, valid_acc\n')
+    pre_acc_train, pre_acc_valid = test(args, model, device, train_graphs, valid_graphs, 0)
+    print('Pre training: train: %f, test: %f' % (pre_acc_train, pre_acc_valid))
     #compute loss and accuracies of train, test, and validation for each epoch
     for epoch in range(1, args.epochs + 1):
         scheduler.step()
 
         avg_loss = train(args, model, device, train_graphs, optimizer, epoch)
-        acc_train, acc_test = test(args, model, device, train_graphs, valid_graphs, epoch)
-        #acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch)
+        acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch)
+        #acc_train, acc_test = test(args, model, device, train_graphs, test_graphs, epoch)
 
         if not args.filename == "":
-            f.write("%f,%f,%f" % (avg_loss, acc_train, acc_test))
+            f.write("%f,%f,%f" % (avg_loss, acc_train, acc_valid))
             f.write("\n")
             f.flush()
         print("")
@@ -173,4 +178,4 @@ def main(debug = True):
     
 
 if __name__ == '__main__':
-    main(debug = True)
+    main(debug = False)
