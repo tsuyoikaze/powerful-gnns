@@ -75,9 +75,8 @@ def test(args, model, device, train_graphs, test_graphs, epoch):
     correct = pred.eq(labels.view_as(pred)).sum().cpu().item()
     acc_train = correct / float(len(train_graphs))
 
-    total_classes = len(np.unique(train_classes))
-
     train_classes = [i.graph_class for i in train_graphs]
+    total_classes = len(np.unique(train_classes))
     train_res = [0] * total_classes
     train_total_number = [0] * total_classes
 
