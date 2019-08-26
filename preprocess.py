@@ -192,6 +192,10 @@ def process_sample_main(source, dest, fold_path):
             img_list = f.read().splitlines()
         for img in img_list:
             cancer_class, cancer_type, patient, p_id, magnitude, dataset_type = re.match(r'SOB_(?P<cancer_class>\w+)_(?P<cancer_type>\w+)-(?P<patient>[\w\d-]+)-\d+-(?P<id>\d+)\.png\|(?P<magnitude>\d+)\|\d+\|(?P<dataset>\w+)', img).groups()
+            if dataset_type == 'valid':
+                dataset_type = 'train'
+            if dataset_type == 'train':
+                dataset_type = np.random.choice(['train', 'valid'], p = [0.8, 0.2])
             source_csv_path = os.path.join(source, cancer_class, cancer_type, patient)
             if source_csv_path not in img_dataset:
                 img_dataset[source_csv_path] = dataset_type
