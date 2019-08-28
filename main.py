@@ -93,7 +93,7 @@ def pass_data_iteratively(model, graphs, minibatch_size = 64):
         output.append(model([graphs[j] for j in sampled_idx]).detach())
     return torch.cat(output, 0)
 
-def test(args, model, device, train_graphs, test_graphs, epoch, f, acc_obj):
+def test(args, model, device, train_graphs, test_graphs, epoch, f, acc_obj = None):
     model.eval()
 
     output = pass_data_iteratively(model, train_graphs)
@@ -143,7 +143,8 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f, acc_obj):
             f.write('%f,' % test_res[i])
     f.write('\n')
 
-    append_detail_plot_obj(acc_obj, train_res, test_res)
+    if acc_obj != None:
+        append_detail_plot_obj(acc_obj, train_res, test_res)
 
     return acc_train, acc_test
 
