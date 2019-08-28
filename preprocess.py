@@ -229,7 +229,7 @@ def process_sample_main(source, dest, fold_path):
                         feature.to_csv(os.path.join(dest_path, 'feature_%d.csv' % index))
                     for p_id in ids:
                         if folds[i][source_csv_path][p_id] == 'valid':
-                            os.makedirs(dest_valid_path)
+                            os.makedirs(dest_valid_path, exist_ok=True)
                             os.rename(os.path.join(dest_path, 'graph_%d.csv' % p_id), os.path.join(dest_valid_path, 'graph_%d.csv' % p_id))
                             os.rename(os.path.join(dest_path, 'feature_%d.csv' % p_id), os.path.join(dest_valid_path, 'feature_%d.csv' % p_id))
 if __name__ == '__main__':
