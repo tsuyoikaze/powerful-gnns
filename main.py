@@ -144,7 +144,7 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f, train_acc_obj
     if train_acc_obj != None:
         append_detail_plot_obj(train_acc_obj, train_res)
     if valid_acc_obj != None:
-        append_detail_plot_obj(valid_acc_obj, valid_res)
+        append_detail_plot_obj(valid_acc_obj, test_res)
 
     return acc_train, acc_test
 
