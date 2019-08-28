@@ -224,8 +224,6 @@ def process_sample_main(source, dest, fold_path):
                         dataset_type = folds[i][source_csv_path][p_id]
                         dest_path = os.path.join(dest, 'fold%s' % fold, dataset_type, p)
                         os.makedirs(dest_path, exist_ok=True)
-                        print(ids)
-                        print(p_id)
                         index = ids.index(p_id)
                         graph = graphs[index]
                         feature = features[index]
