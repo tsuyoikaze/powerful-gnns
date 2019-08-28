@@ -198,7 +198,8 @@ def process_sample_main(source, dest, fold_path):
                 dataset_type = np.random.choice(['train', 'valid'], p = [0.8, 0.2])
             source_csv_path = os.path.join(source, cancer_class, cancer_type, patient)
             if source_csv_path not in img_dataset:
-                img_dataset[source_csv_path] = dataset_type
+                img_dataset[source_csv_path] = dict()
+            img_dataset[source_csv_path][p_id] = dataset_type
         folds.append(img_dataset)
         print('done for fold %s' % fold)
 
@@ -218,13 +219,18 @@ def process_sample_main(source, dest, fold_path):
                 graphs, features, ids = process_sample(source_csv_path)
                 for i in range(5):
                     fold = str(i + 1)
-                    dataset_type = folds[i][source_csv_path]
+                    dataset_type = 'train'
                     dest_path = os.path.join(dest, 'fold%s' % fold, dataset_type, p)
+                    dest_valid_path = os.path.join(dest, 'fold%s' % fold, 'valid', p)
                     os.makedirs(dest_path, exist_ok=True)
                     for index, graph in enumerate(graphs, 1):
                         graph.to_csv(os.path.join(dest_path, 'graph_%d.csv' % index))
                     for index, feature in enumerate(features, 1):
                         feature.to_csv(os.path.join(dest_path, 'feature_%d.csv' % index))
-
+                    for p_id in ids:
+                        if folds[i][source_csv_path][p_id] == 'valid':
+                            os.makedirs(dest_valid_path)
+                            os.rename(os.path.join(dest_path, 'graph_%d.csv' % p_id), os.path.join(dest_valid_path, 'graph_%d.csv' % p_id))
+                            os.rename(os.path.join(dest_path, 'feature_%d.csv' % p_id), os.path.join(dest_valid_path, 'feature_%d.csv' % p_id))
 if __name__ == '__main__':
     process_sample_main(sys.argv[1], sys.argv[2], sys.argv[3])
