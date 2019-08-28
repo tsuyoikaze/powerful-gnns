@@ -12,11 +12,38 @@ from models.graphcnn import GraphCNN
 
 from generate_sample import generate_sample
 
+import matplotlib.pyplot as plt
+
 torch.manual_seed(0)
 
 criterion = nn.CrossEntropyLoss()
 
 f = None
+
+def acc_plot(data, args, fname = None):
+    plt.clf()
+    if fname == None:
+        fname = 'accuracies - %d samples - hyperparameters: lr=%f,num_layers=%d,num_mlp_layers=%d,hidden_dim=%d,batch_size=%d' % (len(data), args.lr, args.num_layers, args.num_mlp_layers, args.hidden_dim, args.batch_size)
+    plt.title(fname)
+    for x, y, name in data:
+        plt.plot(x, y, label = name)
+    plt.savefig('%s.png' % fname, dpi = 300)
+
+def create_detail_plot_obj(train_labels, valid_labels, epochs):
+    train_unique = np.unique(train_labels)
+    valid_unique = np.unique(valid_labels)
+
+    res = []
+    for i in range(len(train_unique)):
+        res.append((range(epochs), [], 'train_%d_acc' % train_unique[i]))
+    for i in range(len(valid_unique)):
+        res.append((range(epochs), [], 'valid_%d_acc' % valid_unique[i]))
+    return res
+
+def append_detail_plot_obj(obj, train_accs, valid_accs):
+    combined = train_accs + valid_accs
+    for i in range(len(combined)):
+        obj[i][1].append(combined[i])
 
 def train(args, model, device, train_graphs, optimizer, epoch):
     model.train()
@@ -66,7 +93,7 @@ def pass_data_iteratively(model, graphs, minibatch_size = 64):
         output.append(model([graphs[j] for j in sampled_idx]).detach())
     return torch.cat(output, 0)
 
-def test(args, model, device, train_graphs, test_graphs, epoch, f):
+def test(args, model, device, train_graphs, test_graphs, epoch, f, acc_obj):
     model.eval()
 
     output = pass_data_iteratively(model, train_graphs)
@@ -116,6 +143,8 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f):
             f.write('%f,' % test_res[i])
     f.write('\n')
 
+    append_detail_plot_obj(acc_obj, train_res, test_res)
+
     return acc_train, acc_test
 
 def main(debug = True):
@@ -156,6 +185,8 @@ def main(debug = True):
     					help='let the input node features be the degree of nodes (heuristics for unlabeled graph)')
     parser.add_argument('--filename', type = str, default = "",
                                         help='output file')
+    parser.add_argument('--plot', type = str, default = 'plot_',
+                                        help='output plot')
     args = parser.parse_args()
 
     #set up seeds and gpu device
@@ -191,15 +222,34 @@ def main(debug = True):
     if not args.filename == '':
         f = open(args.filename, 'w')
         f.write('loss, train_acc, valid_acc\n')
+
+    train_x = range(args.epochs+1)
+    train_y = []
+    train_name = 'train_acc'
+
+    valid_x = range(args.epochs+1)
+    valid_y = []
+    valid_name = 'valid_acc'
+
     pre_acc_train, pre_acc_valid = test(args, model, device, train_graphs, valid_graphs, 0, f)
+
+    train_y.append(pre_acc_train)
+    valid_y.append(pre_acc_valid)
+
     print('Pre training: train: %f, test: %f' % (pre_acc_train, pre_acc_valid))
+
+    acc_obj = create_detail_plot_obj([i.graph_class for i in train_graphs], [i.graph_class for i in valid_graphs], args.epochs)
+
     #compute loss and accuracies of train, test, and validation for each epoch
     for epoch in range(1, args.epochs + 1):
         scheduler.step()
 
         avg_loss = train(args, model, device, train_graphs, optimizer, epoch)
-        acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch, f)
+        acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch, f, acc_obj)
         #acc_train, acc_test = test(args, model, device, train_graphs, test_graphs, epoch)
+
+        train_y.append(pre_acc_train)
+        valid_y.append(pre_acc_valid)
 
         if not args.filename == "":
             f.write("%f,%f,%f" % (avg_loss, acc_train, acc_valid))
@@ -210,6 +260,9 @@ def main(debug = True):
     if not args.filename == '':
         f.close()
     
+    overall_acc_obj = [(train_x, train_y, train_name), (valid_x, valid_y, valid_name)]
+    acc_plot(overall_acc_obj, args, fname = '%soverall accuracies' % args.plot)
+    acc_plot(acc_obj, args, fname = '%sspecific accuracies' % args.plot)
 
 if __name__ == '__main__':
     main(debug = False)
