@@ -219,24 +219,15 @@ def process_sample_main(source, dest, fold_path):
                 graphs, features, ids = process_sample(source_csv_path)
                 for i in range(5):
                     fold = str(i + 1)
-                    dataset_type = 'train'
-                    dest_path = os.path.join(dest, 'fold%s' % fold, dataset_type, p)
-                    dest_valid_path = os.path.join(dest, 'fold%s' % fold, 'valid', p)
-                    os.makedirs(dest_path, exist_ok=True)
-                    for index, graph in enumerate(graphs, 1):
-                        graph.to_csv(os.path.join(dest_path, 'graph_%d.csv' % index))
-                    for index, feature in enumerate(features, 1):
-                        feature.to_csv(os.path.join(dest_path, 'feature_%d.csv' % index))
-
-    for i in range(5):
-        for source_csv_path in folds[i]:
-            for p_id in folds[i][source_csv_path]:
-                print(folds[i][source_csv_path].keys())
-                print(source_csv_path)
-                if folds[i][source_csv_path][p_id] == 'valid':
-                    os.makedirs(dest_valid_path, exist_ok=True)
-                    os.rename(os.path.join(dest_path, 'graph_%d.csv' % p_id), os.path.join(dest_valid_path, 'graph_%d.csv' % p_id))
-                    os.rename(os.path.join(dest_path, 'feature_%d.csv' % p_id), os.path.join(dest_valid_path, 'feature_%d.csv' % p_id))
+                    for p_id in folds[i][source_csv_path]:
+                        dataset_type = folds[i][source_csv_path][p_id]
+                        dest_path = os.path.join(dest, 'fold%s' % fold, dataset_type, p)
+                        os.makedirs(dest_path, exist_ok=True)
+                        index = ids.index(p_id)
+                        graph = graphs[index]
+                        feature = features[index]
+                        graph.to_csv(os.path.join(dest_path, 'graph_%d.csv' % p_id))
+                        feature.to_csv(os.path.join(dest_path, 'feature_%d.csv' % p_id))
 
 if __name__ == '__main__':
     process_sample_main(sys.argv[1], sys.argv[2], sys.argv[3])
