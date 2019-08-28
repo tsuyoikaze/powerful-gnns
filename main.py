@@ -28,6 +28,7 @@ def acc_plot(data, args, fname = None):
     for x, y, name in data:
         plt.plot(x, y, label = name)
     plt.legend(loc='lower right')
+    plt.yticks(np.arange(1, step = 0.1))
     plt.savefig('%s.png' % fname, dpi = 450)
 
 def create_detail_plot_obj(train_labels, epochs):
