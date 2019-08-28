@@ -249,8 +249,8 @@ def main(debug = True):
         acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch, f, acc_obj)
         #acc_train, acc_test = test(args, model, device, train_graphs, test_graphs, epoch)
 
-        train_y.append(pre_acc_train)
-        valid_y.append(pre_acc_valid)
+        train_y.append(acc_train)
+        valid_y.append(acc_valid)
 
         if not args.filename == "":
             f.write("%f,%f,%f" % (avg_loss, acc_train, acc_valid))
