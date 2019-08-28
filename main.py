@@ -24,11 +24,11 @@ def acc_plot(data, args, fname = None):
     plt.clf()
     if fname == None:
         fname = 'accuracies - %d samples - hyperparameters: lr=%f,num_layers=%d,num_mlp_layers=%d,hidden_dim=%d,batch_size=%d' % (len(data), args.lr, args.num_layers, args.num_mlp_layers, args.hidden_dim, args.batch_size)
-    plt.title(fname)
+    plt.title('%s - hyperparameters: lr=%f,num_layers=%d,num_mlp_layers=%d,hidden_dim=%d,batch_size=%d' % (fname, args.lr, args.num_layers, args.num_mlp_layers, args.hidden_dim, args.batch_size))
     for x, y, name in data:
         plt.plot(x, y, label = name)
     plt.legend(loc='lower right')
-    plt.savefig('%s.png' % fname, dpi = 300)
+    plt.savefig('%s.png' % fname, dpi = 450)
 
 def create_detail_plot_obj(train_labels, valid_labels, epochs):
     train_unique = np.unique(train_labels)
