@@ -30,19 +30,16 @@ def acc_plot(data, args, fname = None):
     plt.legend(loc='lower right')
     plt.savefig('%s.png' % fname, dpi = 450)
 
-def create_detail_plot_obj(train_labels, valid_labels, epochs):
+def create_detail_plot_obj(train_labels, epochs):
     train_unique = np.unique(train_labels)
-    valid_unique = np.unique(valid_labels)
 
     res = []
     for i in range(len(train_unique)):
         res.append((range(epochs), [], 'train_%d_acc' % train_unique[i]))
-    for i in range(len(valid_unique)):
-        res.append((range(epochs), [], 'valid_%d_acc' % valid_unique[i]))
     return res
 
-def append_detail_plot_obj(obj, train_accs, valid_accs):
-    combined = train_accs + valid_accs
+def append_detail_plot_obj(obj, train_accs):
+    combined = train_accs
     for i in range(len(combined)):
         obj[i][1].append(combined[i])
 
@@ -94,7 +91,7 @@ def pass_data_iteratively(model, graphs, minibatch_size = 64):
         output.append(model([graphs[j] for j in sampled_idx]).detach())
     return torch.cat(output, 0)
 
-def test(args, model, device, train_graphs, test_graphs, epoch, f, acc_obj = None):
+def test(args, model, device, train_graphs, test_graphs, epoch, f, train_acc_obj = None, valid_acc_obj = None):
     model.eval()
 
     output = pass_data_iteratively(model, train_graphs)
@@ -144,8 +141,10 @@ def test(args, model, device, train_graphs, test_graphs, epoch, f, acc_obj = Non
             f.write('%f,' % test_res[i])
     f.write('\n')
 
-    if acc_obj != None:
-        append_detail_plot_obj(acc_obj, train_res, test_res)
+    if train_acc_obj != None:
+        append_detail_plot_obj(train_acc_obj, train_res)
+    if valid_acc_obj != None:
+        append_detail_plot_obj(valid_acc_obj, valid_res)
 
     return acc_train, acc_test
 
@@ -240,14 +239,15 @@ def main(debug = True):
 
     print('Pre training: train: %f, test: %f' % (pre_acc_train, pre_acc_valid))
 
-    acc_obj = create_detail_plot_obj([i.graph_class for i in train_graphs], [i.graph_class for i in valid_graphs], args.epochs)
+    train_acc_obj = create_detail_plot_obj([i.graph_class for i in train_graphs], args.epochs)
+    valid_acc_obj = create_detail_plot_obj([i.graph_class for i in valid_graphs], args.epochs)
 
     #compute loss and accuracies of train, test, and validation for each epoch
     for epoch in range(1, args.epochs + 1):
         scheduler.step()
 
         avg_loss = train(args, model, device, train_graphs, optimizer, epoch)
-        acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch, f, acc_obj)
+        acc_train, acc_valid = test(args, model, device, train_graphs, valid_graphs, epoch, f, train_acc_obj, valid_acc_obj)
         #acc_train, acc_test = test(args, model, device, train_graphs, test_graphs, epoch)
 
         train_y.append(acc_train)
@@ -263,8 +263,9 @@ def main(debug = True):
         f.close()
     
     overall_acc_obj = [(train_x, train_y, train_name), (valid_x, valid_y, valid_name)]
-    acc_plot(overall_acc_obj, args, fname = '%soverall accuracies' % args.plot)
-    acc_plot(acc_obj, args, fname = '%sspecific accuracies' % args.plot)
+    acc_plot(overall_acc_obj, args, fname = '%soverall accuracies_' % args.plot)
+    acc_plot(train_acc_obj, args, fname = '%sspecific accuracies_train_' % args.plot)
+    acc_plot(valid_acc_obj, args, fname = '%sspecific accuracies_valid_' % args.plot)
 
 if __name__ == '__main__':
     main(debug = False)
